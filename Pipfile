@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+setuptools = "*"
+wheel = "*"
+panda = "*"
+
+[dev-packages]
+pylint = "*"
+xmlrunner = "*"
+
+[requires]
+python_version = "3"
+
+[dev-packages.my_project]
+editable = true
+path = "."
