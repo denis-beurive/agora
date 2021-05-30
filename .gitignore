@@ -1,5 +1,6 @@
 # This project
 data
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

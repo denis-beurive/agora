@@ -6,7 +6,8 @@ verify_ssl = true
 [packages]
 setuptools = "*"
 wheel = "*"
-panda = "*"
+pandas = "*"
+matplotlib = "*"
 
 [dev-packages]
 pylint = "*"

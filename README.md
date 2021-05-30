@@ -145,9 +145,15 @@ Uninstall a package:
 
     pipenv uninstall args
 
+> **WARNING**: you must reinstall the current project after this action: `pipenv install --dev`.
+> And you should regenerate the "requirements" files.
+
 Install a package for DEV environment only:
 
     pipenv install --dev xmlrunner
+
+> **WARNING**: you must reinstall the current project after this action: `pipenv install --dev`.
+> And you should regenerate the "requirements" files.
 
 Remove the virtual environment:
 
@@ -158,9 +164,12 @@ Uninstall all packages:
     pipenv uninstall --all
     pipenv uninstall --all-dev
 
+> **WARNING**: you must reinstall the current project after this action: `pipenv install --dev`.
+> And you should regenerate the "requirements" files.
+
 # Build the wheel
 
-    pipenv lock --requirements > requirements.txt
-    pipenv lock --requirements --dev > requirements-dev.txt
+    pipenv lock --requirements > requirements.txt && pipenv lock --requirements --dev > requirements-dev.txt
+
 
 

@@ -1,11 +1,15 @@
 -e .
-args==0.1.0
 astroid==2.5.7
-clint==0.5.1
 isort==5.8.0
 lazy-object-proxy==1.6.0
 mccabe==0.6.1
+numpy==1.20.3
+pandas==1.2.4
 pylint==2.8.2
+python-dateutil==2.8.1
+pytz==2021.1
+six==1.16.0
 toml==0.10.2
+wheel==0.36.2
 wrapt==1.12.1
 xmlrunner==1.7.7
