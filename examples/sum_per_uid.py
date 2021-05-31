@@ -1,3 +1,4 @@
+from typing import Tuple
 import pandas as pd
 from numpy import ndarray
 
@@ -26,12 +27,19 @@ print(df.groupby('X').sum())
 # We extract a "slice" of the data frame (the columns "X" and "Y").
 # ---------------------------------------------------------------------------
 
-print(df[['X', 'Y']].groupby('X').sum())
+result: pd.DataFrame = df[['X', 'Y']].groupby('X').sum()
+print(result)
 
 #   X sum(Y)
 #   1   3
 #   3   7
 #   5   5
+
+print(result.to_json())
+item: Tuple
+for item in result.items():
+    name: str = item[0]
+    series: pd.Series = item[1]
 
 # ---------------------------------------------------------------------------
 # We use a user-provided aggregator.
@@ -66,9 +74,13 @@ def aggregator(s: pd.Series) -> float:
     return action(column_name, s.values)
 
 
-print(df.groupby('X').agg(func=aggregator))
+result: pd.DataFrame = df.groupby('X').agg(func=aggregator)
+print(result)
 
 #   X  sum(Y) sum(2*Z)
 #   1    3       14
 #   3    7       22
 #   5    5       6
+
+print(result.to_json())
+
