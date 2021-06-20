@@ -1,14 +1,46 @@
-from typing import Callable, Any
+"""
+This file implements functions that perform common operations on dataframes.
+"""
+
+from typing import Callable
 import pandas as pd
 from statistics import mean, median
 
 
 def get_count_per_column_value(in_data: pd.DataFrame, column_name: str) -> pd.DataFrame:
     """
-    Given a data frame "D" and a column name "C" (that appears in "D"), returns a data frame
-    that contains two columns:
-    - the first column contains distinct values from the column "C".
-    - the second column contains the number of times a corresponding value from column "C" appears in "D".
+    Given a data frame "D" that contains **at least** 1 column "C", the function returns a dataframe.
+    The returned dataframe contains 2 columns:
+    - the first column (which name is "C") contains distinct values from the column "C".
+    - the second column (which name is "count") contains the number of times a corresponding value
+      from column "C" appears in "D".
+
+    Examples:
+
+        in_data (D):
+
+                   c1  c2
+                0   1  10
+                1   2  10
+                2   3  10
+                3   4  40
+                4   5  50
+
+        get_count_per_column_value(D, 'c1'):
+
+                   c1  count
+                0   1      1
+                1   2      1
+                2   3      1
+                3   4      1
+                4   5      1
+
+        get_count_per_column_value(D, 'c2'):
+
+                   c2  count
+                0  10      3
+                1  40      1
+                2  50      1
 
     :param in_data: the data frame.
     :param column_name: the name of the column.
@@ -23,6 +55,50 @@ def get_stat_per_column_value(in_data: pd.DataFrame,
                               group_by_column_name: str,
                               value_column_name: str,
                               function: Callable) -> pd.DataFrame:
+    """
+    Create series by grouping values according to a given column.
+    Then apply a given function to the created series.
+
+    Example:
+
+        in_data (in_data):
+
+                   c1  c2
+                0  10   1
+                1  10   2
+                2  10   3
+                3  40   4
+                4  50   5
+
+        Let's consider the following hypothesis:
+          - the function to apply is: "stat_function(data: list) -> Union[int, float]"
+          - we execute: get_stat_per_column_value(in_data, 'c1', 'c2', stat_function)
+
+        1. Create series by grouping values according to the column "c1":
+
+                   c1  c2
+                0  10  [1, 2, 3]
+                1  40  [4]
+                2  50  [5]
+
+        2. Apply the function "stat_function" to the series:
+
+                   c1  c2
+                0  10  stat_function([1, 2, 3])
+                1  40  stat_function([4])
+                2  50  stat_function([5])
+
+    :param in_data: the data frame.
+    :param group_by_column_name: the name of the column upon which data are groped.
+    :param value_column_name: the name of the column upon which the series are created.
+    :param function: the function to apply on the series. The function signature must be:
+                     stat_function(data: list) -> Union[int, float]
+    :return: a data frame that contains two columns:
+             - the first column name is the value of the parameter "group_by_column_name".
+             - the second column name is the value of the parameter "value_column_name".
+
+
+    """
     sub_data: pd.DataFrame = in_data.filter([group_by_column_name, value_column_name], axis=1)
     return sub_data.groupby(by=group_by_column_name, as_index=False).agg(function)
 
@@ -30,10 +106,113 @@ def get_stat_per_column_value(in_data: pd.DataFrame,
 def get_average_per_column_value(in_data: pd.DataFrame,
                                  group_by_column_name: str,
                                  value_column_name: str) -> pd.DataFrame:
+    """
+    Create series by grouping values according to a given column.
+    Then calculate the average values of the created series.
+
+    Example:
+
+        in_data (in_data):
+
+                   c1  c2
+                0  10   1
+                1  10   2
+                2  10   3
+                3  40   4
+                4  50   5
+
+        Let's consider the following hypothesis:
+          - we execute: get_stat_per_column_value(in_data, 'c1', 'c2', stat_function)
+
+        1. Create series by grouping values according to the column "c1":
+
+                   c1  c2
+                0  10  [1, 2, 3]
+                1  40  [4]
+                2  50  [5]
+
+        2. Calculate the average values of the created series.
+
+                   c1  c2
+                0  10  avg([1, 2, 3])
+                1  40  avg([4])
+                2  50  avg([5])
+
+    :param in_data: the data frame.
+    :param group_by_column_name: the name of the column upon which data are groped.
+    :param value_column_name: the name of the column upon which the series are created.
+    :return: a data frame that contains two columns:
+             - the first column name is the value of the parameter "group_by_column_name".
+             - the second column name is the value of the parameter "value_column_name".
+    """
     return get_stat_per_column_value(in_data, group_by_column_name, value_column_name, lambda x: mean(list(x)))
 
 
 def get_median_per_column_value(in_data: pd.DataFrame,
                                 group_by_column_name: str,
                                 value_column_name: str) -> pd.DataFrame:
+    """
+    Create series by grouping values according to a given column.
+    Then calculate the median values of the created series.
+
+    Example:
+
+        in_data (in_data):
+
+                   c1  c2
+                0  10   1
+                1  10   2
+                2  10   3
+                3  40   4
+                4  50   5
+
+        Let's consider the following hypothesis:
+          - we execute: get_stat_per_column_value(in_data, 'c1', 'c2', stat_function)
+
+        1. Create series by grouping values according to the column "c1":
+
+                   c1  c2
+                0  10  [1, 2, 3]
+                1  40  [4]
+                2  50  [5]
+
+        2. Calculate the median values of the created series.
+
+                   c1  c2
+                0  10  median([1, 2, 3])
+                1  40  median([4])
+                2  50  median([5])
+
+    :param in_data: the data frame.
+    :param group_by_column_name: the name of the column upon which data are groped.
+    :param value_column_name: the name of the column upon which the series are created.
+    :return: a data frame that contains two columns:
+             - the first column name is the value of the parameter "group_by_column_name".
+             - the second column name is the value of the parameter "value_column_name".
+    """
     return get_stat_per_column_value(in_data, group_by_column_name, value_column_name, lambda x: median(list(x)))
+
+
+if __name__ == "__main__":
+
+    # Example for "get_count_per_column_value()"
+
+    df = pd.DataFrame({'c1': [1, 2, 3, 4, 5],
+                       'c2': [10, 10, 10, 40, 50]})
+    print(df)
+    res = get_count_per_column_value(df, 'c1')
+    print(res)
+    res = get_count_per_column_value(df, 'c2')
+    print(res)
+
+    # Example for "get_stat_per_column_value()"
+
+    def stat_function(data: list) -> int:
+        return sum(data)
+
+    df = pd.DataFrame({'c1': [10, 10, 10, 40, 50],
+                       'c2': [1, 2, 3, 4, 5]})
+    res = get_stat_per_column_value(df, 'c1', 'c2', stat_function)
+    print(df)
+    print(res)
+
