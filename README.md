@@ -42,6 +42,14 @@ to the directory `./src`.
     python -c "import xmlrunner"
     python -c "import sys; print(\"\n\".join([f\"{f}\" for f in sys.path]))"
     
+# Run the script
+
+Usage (from the project root folder):
+
+    python -m agora.agora --verbose ./data ./output
+
+> Note: make sure to initialise the Python environment first! (read the file README.md) `pipenv install --dev`.
+
 # Running the unit tests
     
     python run_unittest.py --verbose
