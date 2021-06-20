@@ -16,6 +16,7 @@ import re
 import pandas as pd
 from numpy import float64
 from .graph_type import GraphType
+from .stat import BoxPlotData, calculate_boxplot_data
 from .graph_drawer import \
     draw_transactions_counts_repartition, \
     draw_transactions_average_amounts_repartition, \
@@ -170,7 +171,10 @@ def run():
             print("*"*10 + csv_input + "*"*10)
             print(df[['vendor_name', 'usd', 'btc', 'rate']])
 
-        outputs = get_output_files(output_path, os.path.basename(csv_input))
+        outputs = get_output_files(output_path, csv_input[:-4])
+        if verbose:
+            for path in outputs.values():
+                print("- {}".format(path))
 
         # 1. Transactions per vendor: boxplot / hbar.
         #    - Number of transactions per vendor.
@@ -182,12 +186,18 @@ def run():
         df_vendor_average_value = draw_transactions_average_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC], "{}: Average transaction in BTC per vendor".format(csv_input))
         df_vendor_max_value = draw_transactions_max_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per vendor".format(csv_input))
 
-        # hbar
-        draw_transactions_count_greater_than(df_vendor_count, "vendor_name", 108, outputs[GraphType.HBAR_VENDOR_TRANSACTION_COUNTS], "{}: Number of transactions per vendor".format(csv_input))
-        draw_transactions_average_amounts_greater_than(df_vendor_average_value, "vendor_name", 1.82, outputs[GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC], "{}: Average transaction in BTC per vendor".format(csv_input))
-        draw_transactions_max_amounts_greater_than(df_vendor_max_value, "vendor_name", 4.717, outputs[GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per vendor".format(csv_input))
+        # print(df_vendor_max_value[['vendor_name', 'btc']])
 
-        # 2. Transactions per shipping locality: boxplot / hbar..
+        # hbar
+        bp_data_count: BoxPlotData = calculate_boxplot_data(df, "btc")
+        bp_data_average_amounts: BoxPlotData = calculate_boxplot_data(df_vendor_average_value, "btc")
+        bp_data_max_amounts: BoxPlotData = calculate_boxplot_data(df_vendor_max_value, "btc")
+
+        draw_transactions_count_greater_than(df_vendor_count, "vendor_name", bp_data_count.upper_fence, outputs[GraphType.HBAR_VENDOR_TRANSACTION_COUNTS], "{}: Number of transactions per vendor".format(csv_input))
+        draw_transactions_average_amounts_greater_than(df_vendor_average_value, "vendor_name", bp_data_average_amounts.upper_fence, outputs[GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC], "{}: Average transaction in BTC per vendor".format(csv_input))
+        draw_transactions_max_amounts_greater_than(df_vendor_max_value, "vendor_name", bp_data_max_amounts.upper_fence, outputs[GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per vendor".format(csv_input))
+
+        # 2. Transactions per shipping locality: boxplot / hbar.
         #    - Number of transactions per shipping locality.
         #    - Average transaction per shipping locality.
         #    - Maximum transaction per shipping locality.
@@ -198,9 +208,13 @@ def run():
         df_ship_from_max_value = draw_transactions_max_amounts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per shipping locality".format(csv_input))
 
         # hbar
-        draw_transactions_count_greater_than(df_ship_from_count, "ship_from", 729, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS], "{}: Number of transactions per shipping locality".format(csv_input))
-        draw_transactions_average_amounts_greater_than(df_ship_from_average_value, "ship_from", 2.982, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC], "{}: Average transaction in BTC per shipping locality".format(csv_input))
-        draw_transactions_max_amounts_greater_than(df_ship_from_max_value, "ship_from", 21.710, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per shipping locality".format(csv_input))
+        bp_data_count: BoxPlotData = calculate_boxplot_data(df, "btc")
+        bp_data_average_amounts: BoxPlotData = calculate_boxplot_data(df_ship_from_average_value, "btc")
+        bp_data_max_amounts: BoxPlotData = calculate_boxplot_data(df_ship_from_max_value, "btc")
+
+        draw_transactions_count_greater_than(df_ship_from_count, "ship_from", bp_data_count.upper_fence, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS], "{}: Number of transactions per shipping locality".format(csv_input))
+        draw_transactions_average_amounts_greater_than(df_ship_from_average_value, "ship_from", bp_data_average_amounts.upper_fence, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC], "{}: Average transaction in BTC per shipping locality".format(csv_input))
+        draw_transactions_max_amounts_greater_than(df_ship_from_max_value, "ship_from", bp_data_max_amounts.upper_fence, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per shipping locality".format(csv_input))
 
 
 run()

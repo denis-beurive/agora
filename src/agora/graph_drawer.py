@@ -111,7 +111,7 @@ def draw_transactions_count_greater_than(data: pd.DataFrame,
     :param title: the title of the graph.
     """
     sub_data = data[data["count"] > ceiling]
-    sub_data.sort_values(by="count", axis=0, inplace=True)
+    sub_data = sub_data.sort_values(by="count", axis=0, inplace=False)
     hbar(sub_data, "count", ref_name, "Number of transactions", output_path, title)
 
 
@@ -135,7 +135,7 @@ def draw_transactions_average_amounts_greater_than(data: pd.DataFrame,
     :param title: the title of the graph.
     """
     sub_data = data[data["btc"] > ceiling]
-    sub_data.sort_values(by="btc", axis=0, inplace=True)
+    sub_data = sub_data.sort_values(by="btc", axis=0, inplace=False)
     hbar(sub_data, "btc", ref_name, "Average amount per transactions", output_path, title)
 
 
@@ -149,6 +149,8 @@ def draw_transactions_max_amounts_greater_than(data: pd.DataFrame,
 
     Please note that vendor whose average transaction amount is lower than a given value are ignored.
 
+    IMPORTANT: the JS "autoscale" does not work well! If you don't see a vendor, try to zoom!
+
     :param data: the input data. This is a data frame that contains 2 columns:
                  - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
                  - the second column is the maximum transaction amount for the vendor, in BTC
@@ -159,5 +161,5 @@ def draw_transactions_max_amounts_greater_than(data: pd.DataFrame,
     :param title: the title of the graph.
     """
     sub_data = data[data["btc"] > ceiling]
-    sub_data.sort_values(by="btc", axis=0, inplace=True)
+    sub_data = sub_data.sort_values(by="btc", axis=0, inplace=False)
     hbar(sub_data, "btc", ref_name, "Maximum amount per transactions", output_path, title)

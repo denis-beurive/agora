@@ -2,9 +2,30 @@
 This file implements functions that perform common operations on dataframes.
 """
 
-from typing import Callable
+from typing import Callable, Tuple
+from dataclasses import dataclass
 import pandas as pd
 from statistics import mean, median
+from numpy import float64, percentile
+
+
+@dataclass(frozen=False)
+class BoxPlotData:
+    """
+    This class is a container for BoxPlot data.
+    """
+    q1: float64
+    q3: float64
+    iqr: float64
+    lower_fence: float64
+    upper_fence: float64
+
+    def __init__(self, q1: float64, q3: float64):
+        self.q1 = q1
+        self.q3 = q3
+        self.iqr = q3 - q1
+        self.lower_fence = q1 - (1.5 * self.iqr)
+        self.upper_fence = q3 + (1.5 * self.iqr)
 
 
 def get_count_per_column_value(in_data: pd.DataFrame, column_name: str) -> pd.DataFrame:
@@ -238,6 +259,19 @@ def get_max_per_column_value(in_data: pd.DataFrame,
     return get_stat_per_column_value(in_data, group_by_column_name, value_column_name, lambda x: max(list(x)))
 
 
+def calculate_boxplot_data(in_data: pd.DataFrame, column_name: str) -> BoxPlotData:
+    """
+    Calculate boxplot data from values extracted from a data frame column (identified by its name).
+
+    :param in_data: the data frame.
+    :param column_name: the name of the column.
+    :return: data about the boxplot.
+    """
+    sub_data: pd.Series = in_data[column_name]
+    q3, q1 = percentile(sub_data, [75, 25])
+    return BoxPlotData(q1, q3)
+
+
 if __name__ == "__main__":
 
     # Example for "get_count_per_column_value()"
@@ -270,3 +304,7 @@ if __name__ == "__main__":
     print(df)
     print(res)
 
+    df = pd.DataFrame({'c1': [10, 10, 10, 40, 50],
+                       'c2': [1, 2, 3, 4, 5]})
+
+    res = calculate_boxplot_data(df, 'c1')
