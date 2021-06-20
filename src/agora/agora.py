@@ -100,7 +100,7 @@ def load_csv(path: str) -> pd.DataFrame:
     return data.loc[data['vendor_name'].apply(regex_filter)]
 
 
-def draw_transactions_counts_repartition(data: pd.DataFrame, ref_name: str, output_path: str) -> pd.DataFrame:
+def draw_transactions_counts_repartition(data: pd.DataFrame, ref_name: str, output_path: str, title: str) -> pd.DataFrame:
     """
     Generate a boxplot graph that represents the repartition of transactions, considering the total number of
     transactions per "reference". The "reference" is a column name specified by the parameter "ref_name". Typically,
@@ -109,6 +109,7 @@ def draw_transactions_counts_repartition(data: pd.DataFrame, ref_name: str, outp
     :param data: the data frame.
     :param ref_name: the name of the column to use as reference.
     :param output_path: path to the file used to store the representation.
+    :param title: the title of the graph.
     :return: a data frame tha contains 2 columns:
              - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
              - the second column contains the total number of transactions per "reference". The name of this column
@@ -120,11 +121,11 @@ def draw_transactions_counts_repartition(data: pd.DataFrame, ref_name: str, outp
         'x': pd.Series(['transactions' for _ in range(len(counts))]),
         'y': counts
     })
-    single_boxplot(df, 'x', 'y', output_path)
+    single_boxplot(df, 'x', 'y', output_path, title)
     return sub_data
 
 
-def draw_transactions_average_amounts_repartition(data: pd.DataFrame, ref_name: str, output_path: str) -> pd.DataFrame:
+def draw_transactions_average_amounts_repartition(data: pd.DataFrame, ref_name: str, output_path: str, title: str) -> pd.DataFrame:
     """
     Generate a boxplot graph that represents the repartition of transactions, considering the total number of
     transactions per "reference".
@@ -136,6 +137,7 @@ def draw_transactions_average_amounts_repartition(data: pd.DataFrame, ref_name: 
     :param data: the data frame.
     :param ref_name: the name of the column to use as reference.
     :param output_path: path to the file used to store the representation.
+    :param title: the title of the graph.
     :return: a data frame tha contains 2 columns:
          - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
          - the second column contains the average transaction amount per "reference" (which name is given
@@ -147,11 +149,11 @@ def draw_transactions_average_amounts_repartition(data: pd.DataFrame, ref_name: 
         'x': pd.Series(['btc' for _ in range(len(btc))]),
         'y': btc
     })
-    single_boxplot(df, 'x', 'y', output_path)
+    single_boxplot(df, 'x', 'y', output_path, title)
     return sub_data
 
 
-def draw_transactions_count_greater_than(data: pd.DataFrame, ref_name: str, ceiling: int, output_path: str) -> None:
+def draw_transactions_count_greater_than(data: pd.DataFrame, ref_name: str, ceiling: int, output_path: str, title: str) -> None:
     """
     Generate a horizontal BAR diagram that represents the total number of transactions per "reference".
 
@@ -164,13 +166,18 @@ def draw_transactions_count_greater_than(data: pd.DataFrame, ref_name: str, ceil
     :param ref_name: the name of the column to use as reference.
     :param ceiling: the total number of transactions above which the data is printed (on the generated graph).
     :param output_path: the path to the file used to store the graph.
+    :param title: the title of the graph.
     """
     sub_data = data[data["count"] > ceiling]
     sub_data.sort_values(by="count", axis=0, inplace=True)
-    hbar(sub_data, "count", ref_name, "Number of transactions", output_path)
+    hbar(sub_data, "count", ref_name, "Number of transactions", output_path, title)
 
 
-def draw_transactions_average_amount_greater_than(data: pd.DataFrame, ref_name: str, ceiling: float, output_path: str) -> None:
+def draw_transactions_average_amount_greater_than(data: pd.DataFrame,
+                                                  ref_name: str,
+                                                  ceiling: float,
+                                                  output_path: str,
+                                                  title: str) -> None:
     """
     Generate a horizontal BAR diagram that represents the average transaction amount (in BTC) per vendor.
 
@@ -183,10 +190,11 @@ def draw_transactions_average_amount_greater_than(data: pd.DataFrame, ref_name: 
     :param ref_name: the name of the column to use as reference.
     :param ceiling: the average transaction amount above which the data is printed (on the generated graph).
     :param output_path: the path to the file used to store the graph.
+    :param title: the title of the graph.
     """
     sub_data = data[data["btc"] > ceiling]
     sub_data.sort_values(by="btc", axis=0, inplace=True)
-    hbar(sub_data, "btc", "vendor_name", "Average amount per transactions", output_path)
+    hbar(sub_data, "btc", ref_name, "Average amount per transactions", output_path, title)
 
 
 def get_output_files(output_directory: str, prefix: str) -> Dict[GraphType, str]:
@@ -249,15 +257,15 @@ def run():
 
         outputs = get_output_files(output_path, os.path.basename(csv_input))
 
-        df_vendor_count = draw_transactions_counts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_COUNTS])
-        df_vendor_average_value = draw_transactions_average_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC])
-        draw_transactions_count_greater_than(df_vendor_count, "vendor_name", 108, outputs[GraphType.HBAR_VENDOR_TRANSACTION_COUNTS])
-        draw_transactions_average_amount_greater_than(df_vendor_average_value, "vendor_name", 1.82, outputs[GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC])
+        df_vendor_count = draw_transactions_counts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_COUNTS], "Number of transactions per vendor")
+        df_vendor_average_value = draw_transactions_average_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC], "Average transaction in BTC per vendor")
+        draw_transactions_count_greater_than(df_vendor_count, "vendor_name", 108, outputs[GraphType.HBAR_VENDOR_TRANSACTION_COUNTS], "Number of transactions per vendor")
+        draw_transactions_average_amount_greater_than(df_vendor_average_value, "vendor_name", 1.82, outputs[GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC], "Average transaction per vendor")
 
-        df_ship_from_count = draw_transactions_counts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_COUNTS])
-        df_ship_from_average_value = draw_transactions_average_amounts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_AVERAGE_BTC])
-        draw_transactions_count_greater_than(df_ship_from_count, "ship_from", 729, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS])
-        draw_transactions_average_amount_greater_than(df_ship_from_average_value, "ship_from", 2.982, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC])
+        df_ship_from_count = draw_transactions_counts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_COUNTS], "Number of transactions per shipping locality")
+        df_ship_from_average_value = draw_transactions_average_amounts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_AVERAGE_BTC], "Average transaction in BTC per shipping locality")
+        draw_transactions_count_greater_than(df_ship_from_count, "ship_from", 729, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS], "Number of transactions per shipping locality")
+        draw_transactions_average_amount_greater_than(df_ship_from_average_value, "ship_from", 2.982, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC], "Average transaction in BTC per shipping locality")
 
 
 run()

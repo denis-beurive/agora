@@ -7,12 +7,14 @@ def hbar(data: pd.DataFrame,
          abscissa: str,
          ordinate: str,
          legend: str,
-         output_path) -> None:
+         output_path,
+         title: str) -> None:
     fig = go.Figure(go.Bar(x=data.get(abscissa), y=data.get(ordinate), name=legend, orientation='h'))
+    fig.update_layout(title_text=title)
     fig.write_html(output_path, auto_open=False)
 
 
-def single_boxplot(data: pd.DataFrame, abscissa: str, ordinate: str, output_path: str) -> None:
+def single_boxplot(data: pd.DataFrame, abscissa: str, ordinate: str, output_path: str, title: str) -> None:
     """
     Draw a boxplot graph.
 
@@ -22,6 +24,7 @@ def single_boxplot(data: pd.DataFrame, abscissa: str, ordinate: str, output_path
     :param abscissa: the name of the column that contains the graph's abscissa.
     :param ordinate: the name of the column that contains the graph's ordinate.
     :param output_path: the path to the HTML output file.
+    :param title: the graph title.
     """
-    fig = px.box(data, x=abscissa, y=ordinate)
+    fig = px.box(data, x=abscissa, y=ordinate, title=title)
     fig.write_html(output_path, auto_open=False)
