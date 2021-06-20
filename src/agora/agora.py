@@ -32,19 +32,19 @@ class GraphType(Enum):
 
 INPUTS = [
     '01-june2014.csv',
-    # '02-july2014.csv',
-    # '03-aug2014.csv',
-    # '04-sept2014.csv',
-    # '05-oct2014.csv',
-    # '06-nov2014.csv',
-    # '07-dec2014.csv',
-    # '08-jan2015.csv',
-    # '09-feb2015.csv',
-    # '10-mar2015.csv',
-    # '11-apr2015.csv',
-    # '12-may2015.csv',
-    # '13-june2015.csv',
-    # '14-july2015.csv'
+    '02-july2014.csv',
+    '03-aug2014.csv',
+    '04-sept2014.csv',
+    '05-oct2014.csv',
+    '06-nov2014.csv',
+    '07-dec2014.csv',
+    '08-jan2015.csv',
+    '09-feb2015.csv',
+    '10-mar2015.csv',
+    '11-apr2015.csv',
+    '12-may2015.csv',
+    '13-june2015.csv',
+    '14-july2015.csv',
 ]
 
 
