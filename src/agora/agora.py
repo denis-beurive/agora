@@ -16,6 +16,7 @@ import re
 import pandas as pd
 from numpy import float64
 from .graph_type import GraphType
+from .md_type import MdType
 from .stat import BoxPlotData, calculate_boxplot_data
 from .graph_drawer import \
     draw_transactions_counts_repartition, \
@@ -24,6 +25,7 @@ from .graph_drawer import \
     draw_transactions_count_greater_than, \
     draw_transactions_average_amounts_greater_than, \
     draw_transactions_max_amounts_greater_than
+from .markdown_dumper import data_btc_dumper
 
 
 # Set options for Pandas.
@@ -99,9 +101,9 @@ def csv_loader(path: str) -> pd.DataFrame:
     return data.loc[data['vendor_name'].apply(regex_filter)]
 
 
-def get_output_files(output_directory: str, prefix: str) -> Dict[GraphType, str]:
+def get_output_graph_files(output_directory: str, prefix: str) -> Dict[GraphType, str]:
     """
-    Calculate the paths to the output files.
+    Calculate the paths to the output graph files.
 
     :param output_directory: path to the output directory.
     :param prefix: the prefix of the files.
@@ -120,6 +122,19 @@ def get_output_files(output_directory: str, prefix: str) -> Dict[GraphType, str]
         GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS: "{}/ship-from/transactions-count/{}".format(output_directory, "{}-ship-from-transactions-count-hbar.html".format(prefix)),
         GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC: "{}/ship-from/transactions-average/{}".format(output_directory, "{}-ship-from-transactions-average-btc-hbar.html".format(prefix)),
         GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC: "{}/ship-from/transactions-max/{}".format(output_directory, "{}-ship-from-transactions-max-btc-hbar.html".format(prefix)),
+    }
+
+
+def get_output_md_files(output_directory: str) -> Dict[MdType, str]:
+    """
+    Calculate the paths to the output markdown files.
+
+    :param output_directory: path to the output directory.
+    :return: a dictionary that contains the generated file names, sorted by type of representations.
+    """
+    return {
+        MdType.MD_VENDOR_TRANSACTION: "{}/vendor/transactions.md".format(output_directory),
+        MdType.MD_SHIP_FROM_TRANSACTION: "{}/ship-from/transactions.md".format(output_directory)
     }
 
 
@@ -159,6 +174,11 @@ def run():
         print('input directory:  {}'.format(input_path))
         print('output directory: {}'.format(output_path))
 
+    md_reports_paths = get_output_md_files(output_path)
+    for path in md_reports_paths.values():
+        if os.path.exists(path):
+            os.remove(path)
+
     for csv_input in INPUTS:
 
         # Load CSV file.
@@ -171,7 +191,7 @@ def run():
             print("*"*10 + csv_input + "*"*10)
             print(df[['vendor_name', 'usd', 'btc', 'rate']])
 
-        outputs = get_output_files(output_path, csv_input[:-4])
+        outputs = get_output_graph_files(output_path, csv_input[:-4])
         if verbose:
             for path in outputs.values():
                 print("- {}".format(path))
@@ -186,8 +206,6 @@ def run():
         df_vendor_average_value = draw_transactions_average_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC], "{}: Average transaction in BTC per vendor".format(csv_input))
         df_vendor_max_value = draw_transactions_max_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per vendor".format(csv_input))
 
-        # print(df_vendor_max_value[['vendor_name', 'btc']])
-
         # hbar
         bp_data_count: BoxPlotData = calculate_boxplot_data(df, "btc")
         bp_data_average_amounts: BoxPlotData = calculate_boxplot_data(df_vendor_average_value, "btc")
@@ -196,6 +214,11 @@ def run():
         draw_transactions_count_greater_than(df_vendor_count, "vendor_name", bp_data_count.upper_fence, outputs[GraphType.HBAR_VENDOR_TRANSACTION_COUNTS], "{}: Number of transactions per vendor".format(csv_input))
         draw_transactions_average_amounts_greater_than(df_vendor_average_value, "vendor_name", bp_data_average_amounts.upper_fence, outputs[GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC], "{}: Average transaction in BTC per vendor".format(csv_input))
         draw_transactions_max_amounts_greater_than(df_vendor_max_value, "vendor_name", bp_data_max_amounts.upper_fence, outputs[GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per vendor".format(csv_input))
+
+        md = data_btc_dumper(df_vendor_count, df_vendor_average_value, df_vendor_max_value, 'vendor_name')
+        with open(md_reports_paths[MdType.MD_VENDOR_TRANSACTION], "a") as fd:
+            fd.write("# {}\n\n".format(csv_input[3:-4]))
+            fd.write("{}\n\n".format(md))
 
         # 2. Transactions per shipping locality: boxplot / hbar.
         #    - Number of transactions per shipping locality.
@@ -215,6 +238,11 @@ def run():
         draw_transactions_count_greater_than(df_ship_from_count, "ship_from", bp_data_count.upper_fence, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS], "{}: Number of transactions per shipping locality".format(csv_input))
         draw_transactions_average_amounts_greater_than(df_ship_from_average_value, "ship_from", bp_data_average_amounts.upper_fence, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC], "{}: Average transaction in BTC per shipping locality".format(csv_input))
         draw_transactions_max_amounts_greater_than(df_ship_from_max_value, "ship_from", bp_data_max_amounts.upper_fence, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per shipping locality".format(csv_input))
+
+        md = data_btc_dumper(df_ship_from_count, df_ship_from_average_value, df_ship_from_max_value, 'ship_from')
+        with open(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION], "a") as fd:
+            fd.write("# {}\n\n".format(csv_input[3:-4]))
+            fd.write("{}\n\n".format(md))
 
 
 run()
