@@ -242,7 +242,7 @@ def get_max_per_column_value(in_data: pd.DataFrame,
                 1  40  [4]
                 2  50  [5]
 
-        2. Calculate the median values of the created series.
+        2. Calculate the max values of the created series.
 
                    c1  c2
                 0  10  max([1, 2, 3])
@@ -257,6 +257,51 @@ def get_max_per_column_value(in_data: pd.DataFrame,
              - the second column name is the value of the parameter "value_column_name".
     """
     return get_stat_per_column_value(in_data, group_by_column_name, value_column_name, lambda x: max(list(x)))
+
+
+def get_sum_per_column_value(in_data: pd.DataFrame,
+                             group_by_column_name: str,
+                             value_column_name: str) -> pd.DataFrame:
+    """
+    Create series by grouping values according to a given column.
+    Then calculates the sums from the created series.
+
+    Example:
+
+        in_data (in_data):
+
+                   c1  c2
+                0  10   1
+                1  10   2
+                2  10   3
+                3  40   4
+                4  50   5
+
+        Let's consider the following hypothesis:
+          - we execute: get_max_per_column_value(in_data, 'c1', 'c2', stat_function)
+
+        1. Create series by grouping values according to the column "c1":
+
+                   c1  c2
+                0  10  [1, 2, 3]
+                1  40  [4]
+                2  50  [5]
+
+        2. Calculate the sum from the created series.
+
+                   c1  c2
+                0  10  sum([1, 2, 3])
+                1  40  sum([4])
+                2  50  sum([5])
+
+    :param in_data: the data frame.
+    :param group_by_column_name: the name of the column upon which data are groped.
+    :param value_column_name: the name of the column upon which the series are created.
+    :return: a data frame that contains two columns:
+             - the first column name is the value of the parameter "group_by_column_name".
+             - the second column name is the value of the parameter "value_column_name".
+    """
+    return get_stat_per_column_value(in_data, group_by_column_name, value_column_name, lambda x: sum(list(x)))
 
 
 def calculate_boxplot_data(in_data: pd.DataFrame, column_name: str) -> BoxPlotData:
@@ -304,7 +349,18 @@ if __name__ == "__main__":
     print(df)
     print(res)
 
+    # Example for "get_sum_per_column_value"
+
+    df = pd.DataFrame({'c1': [10, 10, 10, 40, 50],
+                       'c2': [1, 2, 3, 4, 5]})
+
+    res = get_sum_per_column_value(df, 'c1', 'c2')
+    print(df)
+    print(res)
+
     df = pd.DataFrame({'c1': [10, 10, 10, 40, 50],
                        'c2': [1, 2, 3, 4, 5]})
 
     res = calculate_boxplot_data(df, 'c1')
+
+

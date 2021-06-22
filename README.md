@@ -12,7 +12,7 @@ Usage (from the project root folder):
 
     python -m agora.agora --verbose ./data ./output
 
-> **Note**: make sure to initialise the Python environment first! (`pipenv install --dev`
+> **Note**: make sure to initialise the Python environment first! (`pipenv shell` followed by `pipenv install --dev`
 > please read the installation guide)
 
 # Documents

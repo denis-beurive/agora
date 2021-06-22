@@ -4,6 +4,7 @@ import pandas as pd
 def data_btc_dumper(count: pd.DataFrame,
                     average: pd.DataFrame,
                     maximum: pd.DataFrame,
+                    total_sum: pd.DataFrame,
                     reference: str,
                     top_length: int = 10) -> str:
     """
@@ -20,6 +21,8 @@ def data_btc_dumper(count: pd.DataFrame,
                     Expected columns: "reference" ("vendor_name" or "ship_from") and "btc".
     :param maximum: data frame that contains the maximum transactions per "reference".
                     Expected columns: "reference" ("vendor_name" or "ship_from") and "btc".
+    :param total_sum: data frame that contains the total amount of transaction per "reference".
+                      Expected columns: "reference" ("vendor_name" or "ship_from") and "btc".
     :param reference: the reference. It can be: "vendor_name" or "ship_from".
     :param top_length: the number of top "references".
     :return: a string that represents a Markdown table.
@@ -30,6 +33,8 @@ def data_btc_dumper(count: pd.DataFrame,
     top_average.reset_index(drop=True, inplace=True)
     top_maximum = maximum.nlargest(top_length, "btc")
     top_maximum.reset_index(drop=True, inplace=True)
+    top_sum = total_sum.nlargest(top_length, "btc")
+    top_sum.reset_index(drop=True, inplace=True)
 
     tops = pd.DataFrame({
         'top count': top_count[reference],
@@ -37,7 +42,9 @@ def data_btc_dumper(count: pd.DataFrame,
         'top average (BTC)': top_average[reference],
         'average': top_average['btc'],
         'top maximum (BTC)': top_maximum[reference],
-        'maximum': top_average['btc']
+        'maximum': top_average['btc'],
+        'total (BTC)': top_sum[reference],
+        'total': top_sum['btc']
     })
     return tops.to_markdown(index="never")
 
