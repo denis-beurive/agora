@@ -1,6 +1,6 @@
 # This project
 *.png
-*.csv
+# *.csv
 *.html
 
 # Byte-compiled / optimized / DLL files
