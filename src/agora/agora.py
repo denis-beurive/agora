@@ -28,7 +28,8 @@ from .graph_drawer import \
     draw_transactions_average_amounts_greater_than, \
     draw_transactions_max_amounts_greater_than, \
     draw_transactions_sum_amounts_greater_than, \
-    draw_transactions_total_amounts
+    draw_transactions_total_amounts, \
+    draw_transactions_total_counts
 from .markdown_dumper import data_top_btc_dumper, data_total_dumper
 from .fs_tools import create_directory
 
@@ -294,24 +295,43 @@ def run():
             fd.write("# {}\n\n".format(csv_input[3:-4]))
             fd.write("{}\n\n".format(md))
 
-    # VBAR that shows transactions variation.
+    # VBAR that shows transactions variation:
+    # - total amounts.
+    # - total_counts.
     gd_path = "{}/transaction/{}".format(output_path, "total-btc-vbar.html")
     create_directory(gd_path)
     if verbose:
         print("- {}".format(output_path))
-    total = draw_transactions_total_amounts(dataframes,
-                                            'btc',
-                                            'total amount of transactions in BTC',
-                                            gd_path,
-                                            "Total amount of transactions in BTC")
+    total_amounts = draw_transactions_total_amounts(dataframes,
+                                                    'btc',
+                                                    'total amount of transactions in BTC',
+                                                    gd_path,
+                                                    "Total amount of transactions in BTC")
 
-    # Markdown table that shows transactions variation.
+    gd_path = "{}/transaction/{}".format(output_path, "total-count-vbar.html")
+    create_directory(gd_path)
+    if verbose:
+        print("- {}".format(output_path))
+    total_counts = draw_transactions_total_counts(dataframes,
+                                                  'total number of transactions',
+                                                  gd_path,
+                                                  "Total number of transactions")
+
+    # Markdown table that shows transactions variation:
+    # - total amounts.
+    # - total_counts.
     gd_path = "{}/transaction/{}".format(output_path, "total-transactions.md")
+
     create_directory(gd_path)
     if verbose:
         print("- {}".format(gd_path))
-    md = data_total_dumper(total)
+
     with open(gd_path, "w") as fd:
+        md = data_total_dumper(total_amounts)
+        fd.write("# Total transaction amounts in BTC per month\n\n")
+        fd.write("{}\n\n".format(md))
+        md = data_total_dumper(total_counts)
+        fd.write("# Total number of transaction per month\n\n")
         fd.write("{}\n\n".format(md))
 
 

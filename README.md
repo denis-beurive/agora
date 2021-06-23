@@ -24,3 +24,6 @@ Usage (from the **project root folder**):
 
 * [transactions per vendors](output/vendor/transactions.md)
 * [transactions per shipping locality](output/ship-from/transactions.md)
+* [total amount of transactions per month](output/transaction/total-transactions.md)
+* [total number of transactions per month](output/transaction/total-transactions.md)
+

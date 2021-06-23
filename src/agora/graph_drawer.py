@@ -285,3 +285,40 @@ def draw_transactions_total_amounts(transactions: OrderedDict[str, pd.DataFrame]
          output_path=output_path,
          title=title)
     return df
+
+
+def draw_transactions_total_counts(transactions: OrderedDict[str, pd.DataFrame],
+                                   legend: str,
+                                   output_path: str,
+                                   title: str) -> pd.DataFrame:
+    """
+    Draw a vertical HBAR graph that represents the variation of the total number of transaction over time.
+
+    :param transactions: an ordered dictionary which keys are the dates and the values are data frames that
+                         contain the data loaded from the CSV file ("01-june2014.csv"...).
+    :param legend: the legend.
+    :param output_path: the path to the file used to store the graph.
+    :param title: the title of the graph.
+    :return: a data frame that contains 2 columns:
+             - a column named "date".
+             - a column named "total".
+    """
+
+    df = pd.DataFrame()
+    df['date'] = transactions.keys()
+    df['total'] = [len(d.index) for d in transactions.values()]
+
+    # df looks something like:
+    #
+    #         date      total
+    #    0    january   1000
+    #    1    february  2000
+    #    ...  ...       ...
+
+    vbar(df,
+         abscissa="date",
+         ordinate="total",
+         legend=legend,
+         output_path=output_path,
+         title=title)
+    return df
