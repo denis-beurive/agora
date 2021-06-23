@@ -8,8 +8,9 @@
         pipenv install --dev
 """
 
-from typing import Any, Pattern, Match, Dict
+from typing import Any, Pattern, Match, Dict, OrderedDict
 import argparse
+import collections
 from datetime import datetime
 import os
 import re
@@ -26,8 +27,9 @@ from .graph_drawer import \
     draw_transactions_count_greater_than, \
     draw_transactions_average_amounts_greater_than, \
     draw_transactions_max_amounts_greater_than, \
-    draw_transactions_sum_amounts_greater_than
-from .markdown_dumper import data_btc_dumper
+    draw_transactions_sum_amounts_greater_than, \
+    draw_transactions_total_amounts
+from .markdown_dumper import data_top_btc_dumper, data_total_dumper
 from .fs_tools import create_directory
 
 
@@ -199,6 +201,8 @@ def run():
         if os.path.exists(path):
             os.remove(path)
 
+    dataframes: OrderedDict[str, pd.DataFrame] = collections.OrderedDict()
+
     for csv_input in INPUTS:
 
         # Load CSV file.
@@ -206,6 +210,12 @@ def run():
         if verbose:
             print('{}> Loading "{}"'.format(csv_input, csv_path))
         df: pd.DataFrame = csv_loader(csv_path)
+
+        # Drop columns in an attempt to reduce the quantity of memory used.
+        df.drop(columns=["hash", "name","description"])
+
+        # Store the dataframe for later use.
+        dataframes[csv_input[3:-4]] = df
 
         if debug:
             print("*"*10 + csv_input + "*"*10)
@@ -215,6 +225,8 @@ def run():
         if verbose:
             for path in outputs.values():
                 print("- {}".format(path))
+
+        continue
 
         # 1. Transactions per vendor: boxplot / hbar / table.
         #    - Number of transactions per vendor.
@@ -239,10 +251,10 @@ def run():
         draw_transactions_max_amounts_greater_than(df_vendor_max_value, "vendor_name", bp_data_max_amounts.upper_fence, outputs[GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per vendor".format(csv_input))
         draw_transactions_sum_amounts_greater_than(df_vendor_sum_value, "vendor_name", bp_data_sum_amounts.upper_fence, outputs[GraphType.HBAR_VENDOR_TRANSACTION_SUM_BTC], "{}: Total amount of transaction in BTC per vendor".format(csv_input))
 
-        md = data_btc_dumper(df_vendor_count,
-                             df_vendor_average_value,
-                             df_vendor_max_value,
-                             df_vendor_sum_value,
+        md = data_top_btc_dumper(df_vendor_count,
+                                 df_vendor_average_value,
+                                 df_vendor_max_value,
+                                 df_vendor_sum_value,
                              'vendor_name')
         with open(md_reports_paths[MdType.MD_VENDOR_TRANSACTION], "a") as fd:
             fd.write("# {}\n\n".format(csv_input[3:-4]))
@@ -271,14 +283,34 @@ def run():
         draw_transactions_max_amounts_greater_than(df_ship_from_max_value, "ship_from", bp_data_max_amounts.upper_fence, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC], "{}: Maximum transaction in BTC per shipping locality".format(csv_input))
         draw_transactions_sum_amounts_greater_than(df_ship_from_sum_value, "ship_from", bp_data_sum_amounts.upper_fence, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC], "{}: Total amount of transactions in BTC per shipping locality".format(csv_input))
 
-        md = data_btc_dumper(df_ship_from_count,
-                             df_ship_from_average_value,
-                             df_ship_from_max_value,
-                             df_ship_from_sum_value,
+        md = data_top_btc_dumper(df_ship_from_count,
+                                 df_ship_from_average_value,
+                                 df_ship_from_max_value,
+                                 df_ship_from_sum_value,
                              'ship_from')
         with open(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION], "a") as fd:
             fd.write("# {}\n\n".format(csv_input[3:-4]))
             fd.write("{}\n\n".format(md))
+
+    # VBAR that shows transactions variation.
+    gd_path = "{}/transaction/{}".format(output_path, "total-btc-vbar.html")
+    create_directory(gd_path)
+    if verbose:
+        print("- {}".format(output_path))
+    total = draw_transactions_total_amounts(dataframes,
+                                            'btc',
+                                            'total amount of transactions in BTC',
+                                            gd_path,
+                                            "Total amount of transactions in BTC")
+
+    # Markdown table that shows transactions variation.
+    gd_path = "{}/transaction/{}".format(output_path, "total-transactions.md")
+    create_directory(gd_path)
+    if verbose:
+        print("- {}".format(gd_path))
+    md = data_total_dumper(total)
+    with open(gd_path, "w") as fd:
+        fd.write("{}\n\n".format(md))
 
 
 run()

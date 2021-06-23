@@ -1,12 +1,12 @@
 import pandas as pd
 
 
-def data_btc_dumper(count: pd.DataFrame,
-                    average: pd.DataFrame,
-                    maximum: pd.DataFrame,
-                    total_sum: pd.DataFrame,
-                    reference: str,
-                    top_length: int = 10) -> str:
+def data_top_btc_dumper(count: pd.DataFrame,
+                        average: pd.DataFrame,
+                        maximum: pd.DataFrame,
+                        total_sum: pd.DataFrame,
+                        reference: str,
+                        top_length: int = 10) -> str:
     """
     Generate a Markdown representation that shows:
     - the top "references" considering the total number of transactions.
@@ -43,10 +43,26 @@ def data_btc_dumper(count: pd.DataFrame,
         'average': top_average['btc'],
         'top maximum (BTC)': top_maximum[reference],
         'maximum': top_average['btc'],
-        'total (BTC)': top_sum[reference],
+        'top total (BTC)': top_sum[reference],
         'total': top_sum['btc']
     })
     return tops.to_markdown(index="never")
+
+
+def data_total_dumper(data: pd.DataFrame) -> str:
+    """
+    Generate a Markdown representation that shows for each month the total amount of transactions.
+
+    :param data: the dataframe. It must contains (at least) 2 columns:
+                 - a column named "date".
+                 - a column names "total".
+    :return: a string that represents a Markdown table.
+    """
+    gd = pd.DataFrame({
+        'date': data['date'],
+        'total': data['total']
+    })
+    return gd.to_markdown(index="never")
 
 
 if __name__ == "__main__":

@@ -3,11 +3,12 @@ This file implements all the functions used to generate graphs.
 """
 
 import pandas as pd
+from typing import OrderedDict
 from .stat import get_count_per_column_value, \
     get_average_per_column_value, \
     get_max_per_column_value, \
     get_sum_per_column_value
-from .graph import hbar, single_boxplot
+from .graph import hbar, vbar, single_boxplot
 
 
 def draw_transactions_counts_repartition(data: pd.DataFrame,
@@ -244,3 +245,43 @@ def draw_transactions_sum_amounts_greater_than(data: pd.DataFrame,
     sub_data = sub_data.sort_values(by="btc", axis=0, inplace=False)
     hbar(sub_data, "btc", ref_name, "Maximum amount per transactions", output_path, title)
     return sub_data
+
+
+def draw_transactions_total_amounts(transactions: OrderedDict[str, pd.DataFrame],
+                                    ref_name: str,
+                                    legend: str,
+                                    output_path: str,
+                                    title: str) -> pd.DataFrame:
+    """
+    Draw a vertical HBAR graph that represents the variation of the total amount of transaction over time.
+
+    :param transactions: an ordered dictionary which keys are the dates and the values are data frames that
+                         contain the data loaded from the CSV file ("01-june2014.csv"...).
+    :param ref_name: the name of the column that represents the transaction amount.
+                     The value of this parameter should be "btc" or "usd".
+    :param legend: the legend.
+    :param output_path: the path to the file used to store the graph.
+    :param title: the title of the graph.
+    :return: a data frame that contains 2 columns:
+             - a column named "date".
+             - a column named "total".
+    """
+
+    df = pd.DataFrame()
+    df['date'] = transactions.keys()
+    df['total'] = [d[ref_name].sum() for d in transactions.values()]
+
+    # df looks something like:
+    #
+    #         date      total
+    #    0    january   1000
+    #    1    february  2000
+    #    ...  ...       ...
+
+    vbar(df,
+         abscissa="date",
+         ordinate="total",
+         legend=legend,
+         output_path=output_path,
+         title=title)
+    return df
