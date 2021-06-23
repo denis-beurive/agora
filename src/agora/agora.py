@@ -29,7 +29,8 @@ from .graph_drawer import \
     draw_transactions_max_amounts_greater_than, \
     draw_transactions_sum_amounts_greater_than, \
     draw_transactions_total_amounts, \
-    draw_transactions_total_counts
+    draw_transactions_total_counts, \
+    draw_transactions_year
 from .markdown_dumper import data_top_btc_dumper, data_total_dumper
 from .fs_tools import create_directory
 
@@ -135,6 +136,8 @@ def get_output_graph_files(output_directory: str, prefix: str) -> Dict[GraphType
         GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC: "{}/ship-from/transactions-average/{}".format(output_directory, "{}-ship-from-transactions-average-btc-hbar.html".format(prefix)),
         GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC: "{}/ship-from/transactions-max/{}".format(output_directory, "{}-ship-from-transactions-max-btc-hbar.html".format(prefix)),
         GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC: "{}/ship-from/transactions-sum/{}".format(output_directory, "{}-ship-from-transactions-sum-btc-hbar.html".format(prefix)),
+
+        GraphType.BOXPLOT_YEAR: "{}/year/{}".format(output_directory, "boxplot-year")
     }
 
     for path in paths.values():
@@ -203,7 +206,13 @@ def run():
             os.remove(path)
 
     dataframes: OrderedDict[str, pd.DataFrame] = collections.OrderedDict()
-
+    #Bon tu as défini au dessus le Dataframe de l'année mais j'ai fais ma sauce au dessous...
+    df_year = []
+    for csv_input in INPUTS:
+        csv_path = "{}/{}".format(input_path, csv_input)
+        df: pd.DataFrame = csv_loader(csv_path)
+        df_year.append(df)
+    
     for csv_input in INPUTS:
 
         # Load CSV file.
@@ -333,6 +342,7 @@ def run():
         md = data_total_dumper(total_counts)
         fd.write("# Total number of transaction per month\n\n")
         fd.write("{}\n\n".format(md))
-
+    #Bon chemin en dur je sais c'est la honte ...
+    draw_transactions_year(df_year,"btc","{}/year/{}".format("C:/Users/maxim/Desktop/Agora3/agora/output", "boxplot-year.html"), "Boxplot for the year")
 
 run()
