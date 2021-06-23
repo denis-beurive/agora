@@ -226,8 +226,6 @@ def run():
             for path in outputs.values():
                 print("- {}".format(path))
 
-        continue
-
         # 1. Transactions per vendor: boxplot / hbar / table.
         #    - Number of transactions per vendor.
         #    - Average transaction per vendor.
@@ -255,7 +253,9 @@ def run():
                                  df_vendor_average_value,
                                  df_vendor_max_value,
                                  df_vendor_sum_value,
-                             'vendor_name')
+                                 'vendor_name')
+        if verbose:
+            print("- {}".format(md_reports_paths[MdType.MD_VENDOR_TRANSACTION]))
         with open(md_reports_paths[MdType.MD_VENDOR_TRANSACTION], "a") as fd:
             fd.write("# {}\n\n".format(csv_input[3:-4]))
             fd.write("{}\n\n".format(md))
@@ -287,7 +287,9 @@ def run():
                                  df_ship_from_average_value,
                                  df_ship_from_max_value,
                                  df_ship_from_sum_value,
-                             'ship_from')
+                                 'ship_from')
+        if verbose:
+            print("- {}".format(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION]))
         with open(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION], "a") as fd:
             fd.write("# {}\n\n".format(csv_input[3:-4]))
             fd.write("{}\n\n".format(md))
