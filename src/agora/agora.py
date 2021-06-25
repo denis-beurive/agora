@@ -136,8 +136,6 @@ def get_output_graph_files(output_directory: str, prefix: str) -> Dict[GraphType
         GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC: "{}/ship-from/transactions-average/{}".format(output_directory, "{}-ship-from-transactions-average-btc-hbar.html".format(prefix)),
         GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC: "{}/ship-from/transactions-max/{}".format(output_directory, "{}-ship-from-transactions-max-btc-hbar.html".format(prefix)),
         GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC: "{}/ship-from/transactions-sum/{}".format(output_directory, "{}-ship-from-transactions-sum-btc-hbar.html".format(prefix)),
-
-        GraphType.BOXPLOT_YEAR: "{}/year/{}".format(output_directory, "boxplot-year")
     }
 
     for path in paths.values():
