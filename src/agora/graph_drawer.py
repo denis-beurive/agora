@@ -10,22 +10,6 @@ from .stat import get_count_per_column_value, \
     get_sum_per_column_value
 from .graph import hbar, vbar, single_boxplot, multiple_boxplot
 
-INPUTS = [
-    '01-june2014.csv',
-    '02-july2014.csv',
-    '03-aug2014.csv',
-    '04-sept2014.csv',
-    '05-oct2014.csv',
-    '06-nov2014.csv',
-    '07-dec2014.csv',
-    '08-jan2015.csv',
-    '09-feb2015.csv',
-    '10-mar2015.csv',
-    '11-apr2015.csv',
-    '12-may2015.csv',
-    '13-june2015.csv',
-    '14-july2015.csv',
-]
 
 def draw_transactions_counts_repartition(data: pd.DataFrame,
                                          ref_name: str,
@@ -338,24 +322,25 @@ def draw_transactions_total_counts(transactions: OrderedDict[str, pd.DataFrame],
          output_path=output_path,
          title=title)
     return df
-  
-def draw_transactions_year(data: list,
+
+
+def draw_transactions_year(data: OrderedDict[str, pd.DataFrame],
                            ref_name: str,
                            output_path: str,
                            title: str) -> list:
     """
-    Generate a boxplots graph that represents the repartition of transactions (in BTC) per month.
+    Generate a graph that represents the repartition of transactions per vendors (in BTC) per month,
+    in the form of a series of boxplots. Each boxplot shows the repartition of transactions per vendors (in BTC) for
+    a given month.
 
-
-    :param data: the input data. This is a list of all Dataframes
-    :param ref_name: the name of the column to use as reference.
+    :param data: the input data. This is an ordered dictionary which keys are the dates and the values the associated
+                 dataframes.
+    :param ref_name: the name of the column to use as data.
     :param output_path: the path to the file used to store the graph.
     :param title: the title of the graph.
     :return: a list of Dataframes that contains 1 column. The name of this column is "btc".
     """
 
-    sub_data = []
-    for i in range(len(data)):
-      sub_data.append(data[i]['btc'])
-    multiple_boxplot(sub_data, INPUTS, ref_name, output_path, title)
+    sub_data = [df[ref_name] for df in data.values()]
+    multiple_boxplot(sub_data, list(data.keys()), ref_name, output_path, title)
     return sub_data

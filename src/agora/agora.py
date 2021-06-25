@@ -206,6 +206,7 @@ def run():
             os.remove(path)
 
     dataframes: OrderedDict[str, pd.DataFrame] = collections.OrderedDict()
+
     #Bon tu as défini au dessus le Dataframe de l'année mais j'ai fais ma sauce au dessous...
     df_year = []
     for csv_input in INPUTS:
@@ -330,7 +331,6 @@ def run():
     # - total amounts.
     # - total_counts.
     gd_path = "{}/transaction/{}".format(output_path, "total-transactions.md")
-
     create_directory(gd_path)
     if verbose:
         print("- {}".format(gd_path))
@@ -342,7 +342,13 @@ def run():
         md = data_total_dumper(total_counts)
         fd.write("# Total number of transaction per month\n\n")
         fd.write("{}\n\n".format(md))
-    #Bon chemin en dur je sais c'est la honte ...
-    draw_transactions_year(df_year,"btc","{}/year/{}".format("C:/Users/maxim/Desktop/Agora3/agora/output", "boxplot-year.html"), "Boxplot for the year")
+
+    gd_path = "{}/transaction/{}".format(output_path, "boxplot-year.html")
+    create_directory(gd_path)
+    draw_transactions_year(dataframes,
+                           "btc",
+                           gd_path,
+                           "Boxplot for the year")
+
 
 run()
