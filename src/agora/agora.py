@@ -3,7 +3,7 @@
 
         python -m agora.agora --verbose ./data ./output
 
-    For test (load only 100 rows per CSV file):
+    For test (load only 20 rows per CSV file):
 
         python -m agora.agora --verbose --test ./data ./output
 
