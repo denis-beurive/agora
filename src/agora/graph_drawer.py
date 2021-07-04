@@ -8,7 +8,7 @@ from .stat import get_count_per_column_value, \
     get_average_per_column_value, \
     get_max_per_column_value, \
     get_sum_per_column_value
-from .graph import hbar, vbar, single_boxplot, multiple_boxplot
+from .graph import hbar, vbar, single_boxplot, multiple_boxplot_seaborn
 
 
 def draw_transactions_counts_repartition(data: pd.DataFrame,
@@ -327,20 +327,41 @@ def draw_transactions_total_counts(transactions: OrderedDict[str, pd.DataFrame],
 def draw_transactions_year(data: OrderedDict[str, pd.DataFrame],
                            ref_name: str,
                            output_path: str,
-                           title: str) -> list:
+                           title: str) -> pd.DataFrame:
     """
-    Generate a graph that represents the repartition of transactions per vendors (in BTC) per month,
-    in the form of a series of boxplots. Each boxplot shows the repartition of transactions per vendors (in BTC) for
+    Generate a graph that represents the repartition of transactions (in BTC) per vendor and per month,
+    in the form of a series of boxplots. Each boxplot shows the repartition of transactions  (in BTC) per vendor for
     a given month.
 
     :param data: the input data. This is an ordered dictionary which keys are the dates and the values the associated
-                 dataframes.
+                 dataframes. Please note that the dataframes must contain a column named "ref_name" (see next
+                 parameter).
     :param ref_name: the name of the column to use as data.
     :param output_path: the path to the file used to store the graph.
     :param title: the title of the graph.
-    :return: a list of Dataframes that contains 1 column. The name of this column is "btc".
+    :return: a Dataframes that contains 2 columns:
+    - the first columns contains the names of the months.
+    - the second columns contains the data associated with the months.
     """
 
-    sub_data = [df[ref_name] for df in data.values()]
-    multiple_boxplot(sub_data, list(data.keys()), ref_name, output_path, title)
-    return sub_data
+    # We build a dataframe that looks something like:
+    #
+    #              btc     month
+    #       0        0       jan
+    #       1        1       jan
+    #       2        2       jan
+    #       ...
+    #       n        0       feb
+    #       n+1     11       feb
+    #       n+2     22       feb
+    #       ...
+
+    dataframe = pd.DataFrame([], columns=['btc', 'month'])
+    month: str
+    btc_values: pd.DataFrame
+    for month, btc_values in data.items():
+        n = pd.DataFrame(btc_values[ref_name])
+        n['month'] = month
+        dataframe = dataframe.append(n, ignore_index=True)
+    multiple_boxplot_seaborn(dataframe, 'month', 'btc')
+    return dataframe

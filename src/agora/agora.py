@@ -3,12 +3,16 @@
 
         python -m agora.agora --verbose ./data ./output
 
+    For test (load only 100 rows per CSV file):
+
+        python -m agora.agora --verbose --test ./data ./output
+
     Note: make sure to initialise the Python environment first! (read the file README.md)
 
         pipenv install --dev
 """
 
-from typing import Any, Pattern, Match, Dict, OrderedDict
+from typing import Any, Pattern, Match, Dict, OrderedDict, Optional
 import argparse
 import collections
 from datetime import datetime
@@ -33,10 +37,14 @@ from .graph_drawer import \
     draw_transactions_year
 from .markdown_dumper import data_top_btc_dumper, data_total_dumper
 from .fs_tools import create_directory, create_file
+import seaborn as sns
 
 
 # Set options for Pandas.
 pd.set_option("display.max_rows", None, "display.max_columns", None)
+
+# Apply Seaborn default theme.
+sns.set_theme()
 
 INPUTS = [
     '01-june2014.csv',
@@ -56,22 +64,24 @@ INPUTS = [
 ]
 
 
-def classname(obj: Any) -> str:
-    cls = type(obj)
-    module = cls.__module__
-    name = cls.__qualname__
-    if module is not None and module != "__builtin__":
-        name = module + "." + name
-    return name
+USE_MINIMAL_SET = True
+"""
+Tell whether to load only the minimal set of data from the CSV files. The value True means that we want
+to load only the minimal set of data. This will greatly accelerate the entire process.
+"""
 
 
-def csv_loader(path: str) -> pd.DataFrame:
+def csv_loader(path: str, load_minimal: bool = USE_MINIMAL_SET, max_rows: Optional[int] = None) -> pd.DataFrame:
     """
     Load data from CSV file.
 
     This function skips the rows that contain empty vendor names.
 
     :param path: path to the CSV file to load.
+    :param load_minimal: tell whether to load only the minimum set of data or not.
+    If the parameter value is True, then only the minimum set of data is loaded.
+    :param max_rows: maximum number of rows to load.
+    The value None means "no maximum value".
     :return: the loaded data.
     """
 
@@ -90,21 +100,31 @@ def csv_loader(path: str) -> pd.DataFrame:
         else:
             return True
 
-    data: pd.DataFrame = pd.read_csv(filepath_or_buffer=path,
-                                     sep=',',
-                                     quotechar='"',
-                                     dialect='excel',
-                                     parse_dates=['Date'],
-                                     date_parser=lambda x: datetime.strptime(x, '%Y-%m-%d'),
-                                     dtype={
-                                         'hash': str,
-                                         'btc': float64,
-                                         'usd': float64,
-                                         'rate': float64,
-                                         'ship_from': str,
-                                         'vendor_name': str,
-                                         'name': str
-                                     })
+    if load_minimal:
+        data: pd.DataFrame = pd.read_csv(filepath_or_buffer=path,
+                                         sep=',',
+                                         quotechar='"',
+                                         dialect='excel',
+                                         usecols=['btc', 'ship_from', 'vendor_name'],
+                                         nrows=max_rows)
+    else:
+        # We keep this section of the code just in case we need more data later.
+        data: pd.DataFrame = pd.read_csv(filepath_or_buffer=path,
+                                         sep=',',
+                                         quotechar='"',
+                                         dialect='excel',
+                                         parse_dates=['Date'],
+                                         date_parser=lambda x: datetime.strptime(x, '%Y-%m-%d'),
+                                         dtype={
+                                             'hash': str,
+                                             'btc': float64,
+                                             'usd': float64,
+                                             'rate': float64,
+                                             'ship_from': str,
+                                             'vendor_name': str,
+                                             'name': str
+                                         },
+                                         nrows=max_rows)
     return data.loc[data['vendor_name'].apply(regex_filter)]
 
 
@@ -177,11 +197,11 @@ def run():
                         action='store_true',
                         default=False,
                         help='activate the debug mode')
-    parser.add_argument('--force',
-                        dest='force',
+    parser.add_argument('--test',
+                        dest='test',
                         action='store_true',
                         default=False,
-                        help='override output files')
+                        help='activate the test mode')
     parser.add_argument('input_path',
                         action='store',
                         nargs=1,
@@ -198,37 +218,32 @@ def run():
     output_path: str = os.path.abspath(args.output_path[0])
     verbose: bool = args.verbose
     debug: bool = args.debug
-    override: bool = args.override
+    test_mode: bool = args.test
 
     if verbose:
         print('input directory:       {}'.format(input_path))
         print('output directory:      {}'.format(output_path))
-        print('override output files: {}'.format("yes" if override else "no"))
+        print('test mode activated:   {}'.format("yes" if test_mode else "no"))
 
     md_reports_paths = get_output_md_files(output_path)
-    for path in md_reports_paths.values():
-        if os.path.exists(path):
-            os.remove(path)
+    # for path in md_reports_paths.values():
+    #     if os.path.exists(path):
+    #         os.remove(path)
 
     dataframes: OrderedDict[str, pd.DataFrame] = collections.OrderedDict()
 
-    #Bon tu as défini au dessus le Dataframe de l'année mais j'ai fais ma sauce au dessous...
-    df_year = []
-    for csv_input in INPUTS:
-        csv_path = "{}/{}".format(input_path, csv_input)
-        df: pd.DataFrame = csv_loader(csv_path)
-        df_year.append(df)
-    
     for csv_input in INPUTS:
 
         # Load CSV file.
         csv_path = "{}/{}".format(input_path, csv_input)
+        maximum = 20 if test_mode else None
         if verbose:
-            print('{}> Loading "{}"'.format(csv_input, csv_path))
-        df: pd.DataFrame = csv_loader(csv_path)
+            print('Loading "{}" (maximum row: {})'.format(csv_path, maximum))
+        df: pd.DataFrame = csv_loader(csv_path, USE_MINIMAL_SET, maximum)
 
         # Drop columns in an attempt to reduce the quantity of memory used.
-        df.drop(columns=["hash", "name","description"])
+        if not USE_MINIMAL_SET:
+            df.drop(columns=["hash", "name", "description"])
 
         # Store the dataframe for later use.
         dataframes[csv_input[3:-4]] = df
@@ -240,7 +255,7 @@ def run():
         outputs = get_output_graph_files(output_path, csv_input[:-4])
         if verbose:
             for path in outputs.values():
-                print("- {}".format(path))
+                print('   Create graph "{}"'.format(path))
 
         # 1. Transactions per vendor: boxplot / hbar / table.
         #    - Number of transactions per vendor.
@@ -271,7 +286,7 @@ def run():
                                  df_vendor_sum_value,
                                  'vendor_name')
         if verbose:
-            print("- {}".format(md_reports_paths[MdType.MD_VENDOR_TRANSACTION]))
+            print('   Create MD file "{}"'.format(md_reports_paths[MdType.MD_VENDOR_TRANSACTION]))
         with open(md_reports_paths[MdType.MD_VENDOR_TRANSACTION], "a") as fd:
             fd.write("# {}\n\n".format(csv_input[3:-4]))
             fd.write("{}\n\n".format(md))
@@ -305,18 +320,18 @@ def run():
                                  df_ship_from_sum_value,
                                  'ship_from')
         if verbose:
-            print("- {}".format(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION]))
+            print('   Create MD file "{}"'.format(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION]))
         with open(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION], "a") as fd:
             fd.write("# {}\n\n".format(csv_input[3:-4]))
             fd.write("{}\n\n".format(md))
 
-    # VBAR that shows transactions variation:
+    # VBAR that shows transactions variations:
     # - total amounts.
-    # - total_counts.
+    # - total counts.
     gd_path = "{}/transaction/{}".format(output_path, "total-btc-vbar.html")
     create_directory(gd_path)
     if verbose:
-        print("- {}".format(output_path))
+        print('Create graph "{}"'.format(output_path))
     total_amounts = draw_transactions_total_amounts(dataframes,
                                                     'btc',
                                                     'total amount of transactions in BTC',
@@ -326,20 +341,19 @@ def run():
     gd_path = "{}/transaction/{}".format(output_path, "total-count-vbar.html")
     create_directory(gd_path)
     if verbose:
-        print("- {}".format(output_path))
+        print('Create graph "{}"'.format(output_path))
     total_counts = draw_transactions_total_counts(dataframes,
                                                   'total number of transactions',
                                                   gd_path,
                                                   "Total number of transactions")
 
-    # Markdown table that shows transactions variation:
+    # Markdown table that shows transactions variations:
     # - total amounts.
-    # - total_counts.
+    # - total counts.
     gd_path = "{}/transaction/{}".format(output_path, "total-transactions.md")
     create_directory(gd_path)
     if verbose:
-        print("- {}".format(gd_path))
-
+        print('Create graph "{}"'.format(gd_path))
     with open(gd_path, "w") as fd:
         md = data_total_dumper(total_amounts)
         fd.write("# Total transaction amounts in BTC per month\n\n")
@@ -349,9 +363,10 @@ def run():
         fd.write("{}\n\n".format(md))
 
     # List of boxplots: repartition of transaction amounts per vendors and per month.
-
     gd_path = "{}/transaction/{}".format(output_path, "boxplot-year.html")
     create_directory(gd_path)
+    if verbose:
+        print('Create graph "{}"'.format(gd_path))
     draw_transactions_year(dataframes,
                            "btc",
                            gd_path,

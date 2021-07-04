@@ -2,6 +2,8 @@ from typing import List
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 def hbar(data: pd.DataFrame,
@@ -76,3 +78,18 @@ def multiple_boxplot(data: List[pd.DataFrame],
     fig.update_layout(title=title,
                       yaxis_title=ordinate)
     fig.write_html(output_path, auto_open=False)
+
+
+def multiple_boxplot_seaborn(data: pd.DataFrame, abscissa: str, ordinate: str):
+    """
+    Draw a series of violin boxplots.
+
+    :param data: a dataframe that contains the data used to generate the graph. Please note that this dataframe must
+                contains at least 2 columns which names are given by the parameters "abscissa" and "ordinate".
+    :param abscissa: the name of the column (within the dataframe "data") that contains the values to be printed on the
+                     X-axis.
+    :param ordinate: the name of the column (within the dataframe "data") that contains the values to be printed on the
+                     Y-axis.
+    """
+    sns.violinplot(x=abscissa, y=ordinate, data=data)
+    plt.show()

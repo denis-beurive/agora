@@ -17,7 +17,7 @@
 | june2015 |      5.54442e+06 |
 | july2015 |      2.00393e+06 |
 
-# Total number of transaction per month
+# Total number of transactions per month
 
 | date     |   total |
 |:---------|--------:|
