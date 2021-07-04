@@ -18,3 +18,15 @@ def create_directory(file_path: str) -> bool:
         os.makedirs(dir_path)
         return True
     return False
+
+
+def create_file(file_path: str, override_flag: bool) -> bool:
+    """
+    Test whether a file should be created or not.
+
+    :param file_path: path to the file.
+    :param override_flag: flag that indicates whether an existing file should be overrode or not.
+    :return: if the file should be created, then the function returns the value True.
+    Otherwise, it returns the value False.
+    """
+    return (not os.path.exists(file_path)) or override_flag

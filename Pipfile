@@ -8,6 +8,7 @@ setuptools = "*"
 wheel = "*"
 pandas = "*"
 matplotlib = "*"
+seaborn = "*"
 
 [dev-packages]
 pylint = "*"

@@ -32,7 +32,7 @@ from .graph_drawer import \
     draw_transactions_total_counts, \
     draw_transactions_year
 from .markdown_dumper import data_top_btc_dumper, data_total_dumper
-from .fs_tools import create_directory
+from .fs_tools import create_directory, create_file
 
 
 # Set options for Pandas.
@@ -177,6 +177,11 @@ def run():
                         action='store_true',
                         default=False,
                         help='activate the debug mode')
+    parser.add_argument('--force',
+                        dest='force',
+                        action='store_true',
+                        default=False,
+                        help='override output files')
     parser.add_argument('input_path',
                         action='store',
                         nargs=1,
@@ -193,10 +198,12 @@ def run():
     output_path: str = os.path.abspath(args.output_path[0])
     verbose: bool = args.verbose
     debug: bool = args.debug
+    override: bool = args.override
 
     if verbose:
-        print('input directory:  {}'.format(input_path))
-        print('output directory: {}'.format(output_path))
+        print('input directory:       {}'.format(input_path))
+        print('output directory:      {}'.format(output_path))
+        print('override output files: {}'.format("yes" if override else "no"))
 
     md_reports_paths = get_output_md_files(output_path)
     for path in md_reports_paths.values():
@@ -338,8 +345,10 @@ def run():
         fd.write("# Total transaction amounts in BTC per month\n\n")
         fd.write("{}\n\n".format(md))
         md = data_total_dumper(total_counts)
-        fd.write("# Total number of transaction per month\n\n")
+        fd.write("# Total number of transactions per month\n\n")
         fd.write("{}\n\n".format(md))
+
+    # List of boxplots: repartition of transaction amounts per vendors and per month.
 
     gd_path = "{}/transaction/{}".format(output_path, "boxplot-year.html")
     create_directory(gd_path)
