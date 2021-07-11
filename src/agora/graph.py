@@ -1,28 +1,38 @@
 from typing import Optional
 import pandas as pd
 import os
-import plotly.graph_objects as go
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
 import pyperclip
 
 
+AUTO_SAVE: bool = True
+
+
 def set_graph_properties(abscissa_legend: Optional[str],
-                         ordinate_legend: str,
+                         ordinate_legend: Optional[str],
                          output_path: str,
                          title: str):
+    figure(figsize=(26, 16), dpi=80)
     if abscissa_legend is not None:
         plt.xlabel(abscissa_legend)
-    plt.ylabel(ordinate_legend)
+    if ordinate_legend is not None:
+        plt.ylabel(ordinate_legend)
     plt.title(title)
-    directory = os.path.dirname(output_path)
-    filename = os.path.basename(output_path)
     plt.rcParams['savefig.format'] = 'svg'
-    plt.rcParams['savefig.directory'] = directory
-    print("=" * 40)
-    pyperclip.copy(filename)
-    print("Directory location: {}".format(directory))
-    print("Suggested file name: {} (just paste CTR-V - shout work)".format(filename))
+    plt.rcParams['figure.subplot.left'] = 0.5
+    if AUTO_SAVE:
+        print("Create file {}".format(output_path))
+    else:
+        directory = os.path.dirname(output_path)
+        filename = os.path.basename(output_path)
+        plt.rcParams['savefig.directory'] = directory
+        pyperclip.copy(filename)
+        print("=" * 40)
+        print("Directory location: {}".format(directory))
+        print("Suggested file name: {} (just paste CTR-V - should work)".format(filename))
+    plt.close('all')
 
 
 def vbar(data: pd.DataFrame,
@@ -31,9 +41,15 @@ def vbar(data: pd.DataFrame,
          legend: str,
          output_path: str,
          title: str) -> None:
-    fig = go.Figure(go.Bar(x=data.get(abscissa), y=data.get(ordinate), name=legend, orientation='v'))
-    fig.update_layout(title_text=title)
-    fig.write_html(output_path, auto_open=False)
+    set_graph_properties(None,
+                         None,
+                         output_path,
+                         title)
+    sns.barplot(x=abscissa, y=ordinate, data=data, orient='v')
+    if AUTO_SAVE:
+        plt.savefig(output_path)
+    else:
+        plt.show()
 
 
 def hbar(data: pd.DataFrame,
@@ -57,19 +73,22 @@ def hbar(data: pd.DataFrame,
     :param output_path: the path to the output file.
     :param title: the graph title.
     """
-    sns.barplot(x=abscissa, y=ordinate, data=data, orient='h')
     set_graph_properties(abscissa_legend,
                          ordinate_legend,
                          output_path,
                          title)
-    plt.show()
+    sns.barplot(x=abscissa, y=ordinate, data=data, orient='h')
+    if AUTO_SAVE:
+        plt.savefig(output_path)
+    else:
+        plt.show()
 
 
 def single_boxplot(data: pd.DataFrame,
                    abscissa: str,
                    ordinate: str,
                    abscissa_legend: Optional[str],
-                   ordinate_legend: str,
+                   ordinate_legend: Optional[str],
                    output_path: str,
                    title: str) -> None:
     """
@@ -80,17 +99,20 @@ def single_boxplot(data: pd.DataFrame,
     :param data: the data to plot.
     :param abscissa: the name of the column that contains the graph's abscissa.
     :param ordinate: the name of the column that contains the graph's ordinate.
-    :param abscissa_legend: the legend for the abscissa axis.  May be None.
-    :param ordinate_legend: the legend for the ordinate axis.
+    :param abscissa_legend: the legend for the abscissa axis. May be None.
+    :param ordinate_legend: the legend for the ordinate axis. May be None.
     :param output_path: the path to the output file.
     :param title: the graph title.
     """
-    sns.violinplot(x=abscissa, y=ordinate, data=data)
     set_graph_properties(abscissa_legend,
                          ordinate_legend,
                          output_path,
                          title)
-    plt.show()
+    sns.violinplot(x=abscissa, y=ordinate, data=data)
+    if AUTO_SAVE:
+        plt.savefig(output_path)
+    else:
+        plt.show()
 
 
 def multiple_boxplot(data: pd.DataFrame,
@@ -114,9 +136,12 @@ def multiple_boxplot(data: pd.DataFrame,
     :param output_path: the path to the output file.
     :param title: the graph title.
     """
-    sns.violinplot(x=abscissa, y=ordinate, data=data)
     set_graph_properties(abscissa_legend,
                          ordinate_legend,
                          output_path,
                          title)
-    plt.show()
+    sns.violinplot(x=abscissa, y=ordinate, data=data)
+    if AUTO_SAVE:
+        plt.savefig(output_path)
+    else:
+        plt.show()

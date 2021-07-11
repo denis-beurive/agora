@@ -32,16 +32,16 @@ def draw_transactions_counts_repartition(data: pd.DataFrame,
     sub_data = get_count_per_column_value(data, ref_name)
     counts: pd.Series = sub_data['count']
     df = pd.DataFrame({
-        'x': pd.Series(['transactions' for _ in range(len(counts))]),
-        'y': counts
+        ref_name: pd.Series(['transactions' for _ in range(len(counts))]),
+        'count': counts
     })
     reference = "vendor" if ref_name == "vendor_name" else "shipping locality"
     title = "{} - Total number of transactions per {}".format(date, reference)
     single_boxplot(df,
-                   'x',
-                   'y',
+                   ref_name,
+                   'count',
                    None,
-                   "Total number of transactions",
+                   None,
                    output_path,
                    title)
     return sub_data
@@ -69,16 +69,16 @@ def draw_transactions_average_amounts_repartition(data: pd.DataFrame,
     btc: pd.Series = sub_data['btc']
 
     df = pd.DataFrame({
-        'x': pd.Series(['btc' for _ in range(len(btc))]),
-        'y': btc
+        ref_name: pd.Series(['btc' for _ in range(len(btc))]),
+        'btc': btc
     })
     reference = "vendor" if ref_name == "vendor_name" else "shipping locality"
     title = "{} - Average transaction amount in BTC per {}".format(date, reference)
     single_boxplot(df,
-                   'x',
-                   'y',
+                   ref_name,
+                   'btc',
                    None,
-                   "Average transaction amount in BTC",
+                   None,
                    output_path,
                    title)
     return sub_data
@@ -105,16 +105,16 @@ def draw_transactions_max_amounts_repartition(data: pd.DataFrame,
     sub_data = get_max_per_column_value(data, ref_name, 'btc')
     btc: pd.Series = sub_data['btc']
     df = pd.DataFrame({
-        'x': pd.Series(['btc' for _ in range(len(btc))]),
-        'y': btc
+        ref_name: pd.Series(['btc' for _ in range(len(btc))]),
+        'btc': btc
     })
     reference = "vendor" if ref_name == "vendor_name" else "shipping locality"
     title = "{} - Maximum transaction amount in BTC per {}".format(date, reference)
     single_boxplot(df,
-                   'x',
-                   'y',
+                   ref_name,
+                   'btc',
                    None,
-                   "Maximum transaction amount in BTC",
+                   None,
                    output_path,
                    title)
     return sub_data
@@ -141,16 +141,16 @@ def draw_transactions_sum_amounts_repartition(data: pd.DataFrame,
     sub_data = get_sum_per_column_value(data, ref_name, 'btc')
     btc: pd.Series = sub_data['btc']
     df = pd.DataFrame({
-        'x': pd.Series(['btc' for _ in range(len(btc))]),
-        'y': btc
+        ref_name: pd.Series(['btc' for _ in range(len(btc))]),
+        'btc': btc
     })
     reference = "vendor" if ref_name == "vendor_name" else "shipping locality"
     title = "{} - Sum of all transaction amounts in BTC per {}".format(date, reference)
     single_boxplot(df,
-                   'x',
-                   'y',
+                   ref_name,
+                   'btc',
                    None,
-                   "Sum of all transaction amounts in BTC",
+                   None,
                    output_path,
                    title)
     return sub_data
@@ -158,7 +158,7 @@ def draw_transactions_sum_amounts_repartition(data: pd.DataFrame,
 
 def draw_transactions_count_greater_than(data: pd.DataFrame,
                                          ref_name: str,
-                                         ceiling: int,
+                                         top_count: int,
                                          output_path: str,
                                          date: str) -> Optional[pd.DataFrame]:
     """
@@ -174,7 +174,7 @@ def draw_transactions_count_greater_than(data: pd.DataFrame,
                  - the second column contains the total number of transactions per "reference". The name of this column
                    is "count".
     :param ref_name: the name of the column to use as reference.
-    :param ceiling: the total number of transactions above which the data is printed (on the generated graph).
+    :param top_count: the number of "top" "references" to print.
     :param output_path: the path to the file used to store the graph.
     :param date: the date.
     :return: a data frame that contains 2 columns:
@@ -184,7 +184,9 @@ def draw_transactions_count_greater_than(data: pd.DataFrame,
              or None if the ceiling value is too high.
 
     """
-    sub_data = data[data["count"] > ceiling]
+    # sub_data = data[data["count"] > ceiling]
+    sub_data = data.nlargest(top_count, "count")
+
     sub_data = sub_data.sort_values(by="count", axis=0, inplace=False)
     if len(sub_data) == 0:
         return None
@@ -202,7 +204,7 @@ def draw_transactions_count_greater_than(data: pd.DataFrame,
 
 def draw_transactions_average_amounts_greater_than(data: pd.DataFrame,
                                                    ref_name: str,
-                                                   ceiling: float,
+                                                   top_count: int,
                                                    output_path: str,
                                                    date: str) -> Optional[pd.DataFrame]:
     """
@@ -218,7 +220,7 @@ def draw_transactions_average_amounts_greater_than(data: pd.DataFrame,
                  - the second column is the average transaction amount for the vendor, in BTC
                    (and its columns is "btc").
     :param ref_name: the name of the column to use as reference.
-    :param ceiling: the average transaction amount above which the data is printed (on the generated graph).
+    :param top_count: the number of "top" "references" to print.
     :param output_path: the path to the file used to store the graph.
     :param date: the date.
     :return: if there is at least one "reference" (vendor or shipping locality) that has
@@ -228,7 +230,8 @@ def draw_transactions_average_amounts_greater_than(data: pd.DataFrame,
                   within the first column), in BTC. The name of this column is "btc".
              or None if the ceiling value is too high.
     """
-    sub_data = data[data["btc"] > ceiling]
+    # sub_data = data[data["btc"] > ceiling]
+    sub_data = data.nlargest(top_count, "btc")
     sub_data = sub_data.sort_values(by="btc", axis=0, inplace=False)
 
     if len(sub_data) == 0:
@@ -248,7 +251,7 @@ def draw_transactions_average_amounts_greater_than(data: pd.DataFrame,
 
 def draw_transactions_max_amounts_greater_than(data: pd.DataFrame,
                                                ref_name: str,
-                                               ceiling: float,
+                                               top_count: int,
                                                output_path: str,
                                                date: str) -> Optional[pd.DataFrame]:
     """
@@ -264,7 +267,7 @@ def draw_transactions_max_amounts_greater_than(data: pd.DataFrame,
                  - the second column is the maximum transaction amount for the vendor, in BTC
                    (and its columns is "btc").
     :param ref_name: the name of the column to use as reference.
-    :param ceiling: the average transaction amount above which the data is printed (on the generated graph).
+    :param top_count: the number of "top" "references" to print.
     :param output_path: the path to the file used to store the graph.
     :param date: the date.
     :return: a data frame that contains 2 columns:
@@ -273,7 +276,8 @@ def draw_transactions_max_amounts_greater_than(data: pd.DataFrame,
                   column), in BTC. The name of this column is "btc".
              or None if the ceiling value is too high.
     """
-    sub_data = data[data["btc"] > ceiling]
+    # sub_data = data[data["btc"] > ceiling]
+    sub_data = data.nlargest(top_count, "btc")
     sub_data = sub_data.sort_values(by="btc", axis=0, inplace=False)
 
     if len(sub_data) == 0:
@@ -293,7 +297,7 @@ def draw_transactions_max_amounts_greater_than(data: pd.DataFrame,
 
 def draw_transactions_sum_amounts_greater_than(data: pd.DataFrame,
                                                ref_name: str,
-                                               ceiling: float,
+                                               top_count: int,
                                                output_path: str,
                                                date: str) -> Optional[pd.DataFrame]:
     """
@@ -309,7 +313,7 @@ def draw_transactions_sum_amounts_greater_than(data: pd.DataFrame,
                  - the second column is the total amount of transactions for the vendor, in BTC
                    (and its columns is "btc").
     :param ref_name: the name of the column to use as reference.
-    :param ceiling: the average transaction amount above which the data is printed (on the generated graph).
+    :param top_count: the number of "top" "references" to print.
     :param output_path: the path to the file used to store the graph.
     :param date: the date.
     :return: a data frame that contains 2 columns:
@@ -318,7 +322,8 @@ def draw_transactions_sum_amounts_greater_than(data: pd.DataFrame,
                   within the first column), in BTC. The name of this column is "btc".
             or None if the ceiling value is too high.
     """
-    sub_data = data[data["btc"] > ceiling]
+    # sub_data = data[data["btc"] > top_count]
+    sub_data = data.nlargest(top_count, "btc")
     sub_data = sub_data.sort_values(by="btc", axis=0, inplace=False)
 
     if len(sub_data) == 0:
@@ -342,7 +347,7 @@ def draw_transactions_total_amounts(transactions: OrderedDict[str, pd.DataFrame]
                                     output_path: str,
                                     title: str) -> pd.DataFrame:
     """
-    Draw a vertical HBAR graph that represents the variation of the total amount of transaction in BTC of USD
+    Draw a vertical BAR graph that represents the variation of the total amount of transaction in BTC of USD
     (depending on the currency of reference) over time.
 
     The currency of reference can be: "btc" or "usd".
@@ -384,7 +389,7 @@ def draw_transactions_total_counts(transactions: OrderedDict[str, pd.DataFrame],
                                    output_path: str,
                                    title: str) -> pd.DataFrame:
     """
-    Draw a vertical HBAR graph that represents the variation of the total number of transaction over time.
+    Draw a vertical BAR graph that represents the variation of the total number of transaction over time.
 
     :param transactions: an ordered dictionary which keys are the dates and the values are data frames that
                          contain the data loaded from the CSV file ("01-june2014.csv"...).
@@ -418,8 +423,7 @@ def draw_transactions_total_counts(transactions: OrderedDict[str, pd.DataFrame],
 
 def draw_transactions_year(data: OrderedDict[str, pd.DataFrame],
                            ref_name: str,
-                           output_path: str,
-                           title: str) -> pd.DataFrame:
+                           output_path: str) -> pd.DataFrame:
     """
     Generate a graph that represents the repartition of transactions (in "reference") per vendor and per month,
     in the form of a series of boxplots. Each boxplot shows the repartition of transactions  (in BTC) per vendor for
