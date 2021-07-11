@@ -9,6 +9,8 @@ wheel = "*"
 pandas = "*"
 matplotlib = "*"
 seaborn = "*"
+PyQt5 = "*"
+pyperclip = "*"
 
 [dev-packages]
 pylint = "*"

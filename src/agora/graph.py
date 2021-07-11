@@ -1,30 +1,28 @@
-from typing import List
+from typing import Optional
 import pandas as pd
-import plotly.express as px
+import os
 import plotly.graph_objects as go
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pyperclip
 
 
-def hbar(data: pd.DataFrame,
-         abscissa: str,
-         ordinate: str,
-         legend: str,
-         output_path: str,
-         title: str) -> None:
-    """
-    Draw an horizontal HBAR.
-
-    :param data: the data to plot.
-    :param abscissa: the name of the column that contains the graph's abscissa.
-    :param ordinate: the name of the column that contains the graph's ordinate.
-    :param legend: the legend of the graph.
-    :param output_path: the path to the HTML output file.
-    :param title: the graph title.
-    """
-    fig = go.Figure(go.Bar(x=data.get(abscissa), y=data.get(ordinate), name=legend, orientation='h'))
-    fig.update_layout(title_text=title)
-    fig.write_html(output_path, auto_open=False)
+def set_graph_properties(abscissa_legend: Optional[str],
+                         ordinate_legend: str,
+                         output_path: str,
+                         title: str):
+    if abscissa_legend is not None:
+        plt.xlabel(abscissa_legend)
+    plt.ylabel(ordinate_legend)
+    plt.title(title)
+    directory = os.path.dirname(output_path)
+    filename = os.path.basename(output_path)
+    plt.rcParams['savefig.format'] = 'svg'
+    plt.rcParams['savefig.directory'] = directory
+    print("=" * 40)
+    pyperclip.copy(filename)
+    print("Directory location: {}".format(directory))
+    print("Suggested file name: {} (just paste CTR-V - shout work)".format(filename))
 
 
 def vbar(data: pd.DataFrame,
@@ -38,7 +36,42 @@ def vbar(data: pd.DataFrame,
     fig.write_html(output_path, auto_open=False)
 
 
-def single_boxplot(data: pd.DataFrame, abscissa: str, ordinate: str, output_path: str, title: str) -> None:
+def hbar(data: pd.DataFrame,
+         abscissa: str,
+         ordinate: str,
+         abscissa_legend: Optional[str],
+         ordinate_legend: str,
+         output_path: str,
+         title: str) -> None:
+    """
+    Draw an horizontal HBAR.
+
+    :param data: a dataframe that contains the data used to generate the graph. Please note that this dataframe must
+                 contains at least 2 columns which names are given by the parameters "abscissa" and "ordinate".
+    :param abscissa: the name of the column (within the dataframe "data") that contains the values to be printed on the
+                     X-axis.
+    :param ordinate: the name of the column (within the dataframe "data") that contains the values to be printed on the
+                     Y-axis.
+    :param abscissa_legend: the legend for the abscissa axis. May be None.
+    :param ordinate_legend: the legend for the ordinate axis.
+    :param output_path: the path to the output file.
+    :param title: the graph title.
+    """
+    sns.barplot(x=abscissa, y=ordinate, data=data, orient='h')
+    set_graph_properties(abscissa_legend,
+                         ordinate_legend,
+                         output_path,
+                         title)
+    plt.show()
+
+
+def single_boxplot(data: pd.DataFrame,
+                   abscissa: str,
+                   ordinate: str,
+                   abscissa_legend: Optional[str],
+                   ordinate_legend: str,
+                   output_path: str,
+                   title: str) -> None:
     """
     Draw a boxplot graph.
 
@@ -47,40 +80,26 @@ def single_boxplot(data: pd.DataFrame, abscissa: str, ordinate: str, output_path
     :param data: the data to plot.
     :param abscissa: the name of the column that contains the graph's abscissa.
     :param ordinate: the name of the column that contains the graph's ordinate.
-    :param output_path: the path to the HTML output file.
+    :param abscissa_legend: the legend for the abscissa axis.  May be None.
+    :param ordinate_legend: the legend for the ordinate axis.
+    :param output_path: the path to the output file.
     :param title: the graph title.
     """
-    fig = px.box(data, x=abscissa, y=ordinate, title=title)
-    fig.write_html(output_path, auto_open=False)
+    sns.violinplot(x=abscissa, y=ordinate, data=data)
+    set_graph_properties(abscissa_legend,
+                         ordinate_legend,
+                         output_path,
+                         title)
+    plt.show()
 
 
-def multiple_boxplot(data: List[pd.DataFrame],
-                     abscissa: List[str],
+def multiple_boxplot(data: pd.DataFrame,
+                     abscissa: str,
                      ordinate: str,
+                     abscissa_legend: Optional[str],
+                     ordinate_legend: str,
                      output_path: str,
-                     title: str) -> None:
-    """
-    Draw a multiple boxplot graph.
-
-    The type of graph is used to present series of repartition.
-
-    :param data: the list of data to plot.
-    :param abscissa: the names of the months.
-    :param ordinate: the name of the axis that represents the graph's ordinate.
-    :param output_path: the path to the HTML output file.
-    :param title: the graph title.
-    """
-    fig = go.Figure(go.Box(y=data[0], name='{}'.format(abscissa[0][3:-4])))
-
-    for i in range(1, len(abscissa)):
-        fig.add_trace(go.Box(y=data[i], name='{}'.format(abscissa[i][3:-4])))
-
-    fig.update_layout(title=title,
-                      yaxis_title=ordinate)
-    fig.write_html(output_path, auto_open=False)
-
-
-def multiple_boxplot_seaborn(data: pd.DataFrame, abscissa: str, ordinate: str):
+                     title: str):
     """
     Draw a series of violin boxplots.
 
@@ -90,6 +109,14 @@ def multiple_boxplot_seaborn(data: pd.DataFrame, abscissa: str, ordinate: str):
                      X-axis.
     :param ordinate: the name of the column (within the dataframe "data") that contains the values to be printed on the
                      Y-axis.
+    :param abscissa_legend: the legend for the abscissa axis. May be None.
+    :param ordinate_legend: the legend for the ordinate axis.
+    :param output_path: the path to the output file.
+    :param title: the graph title.
     """
     sns.violinplot(x=abscissa, y=ordinate, data=data)
+    set_graph_properties(abscissa_legend,
+                         ordinate_legend,
+                         output_path,
+                         title)
     plt.show()
