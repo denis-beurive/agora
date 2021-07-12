@@ -32,7 +32,6 @@ def set_graph_properties(abscissa_legend: Optional[str],
         print("=" * 40)
         print("Directory location: {}".format(directory))
         print("Suggested file name: {} (just paste CTR-V - should work)".format(filename))
-    plt.close('all')
 
 
 def vbar(data: pd.DataFrame,
@@ -50,6 +49,7 @@ def vbar(data: pd.DataFrame,
         plt.savefig(output_path)
     else:
         plt.show()
+    plt.close('all')
 
 
 def hbar(data: pd.DataFrame,
@@ -82,6 +82,7 @@ def hbar(data: pd.DataFrame,
         plt.savefig(output_path)
     else:
         plt.show()
+    plt.close('all')
 
 
 def single_boxplot(data: pd.DataFrame,
@@ -113,6 +114,7 @@ def single_boxplot(data: pd.DataFrame,
         plt.savefig(output_path)
     else:
         plt.show()
+    plt.close('all')
 
 
 def multiple_boxplot(data: pd.DataFrame,
@@ -145,3 +147,4 @@ def multiple_boxplot(data: pd.DataFrame,
         plt.savefig(output_path)
     else:
         plt.show()
+    plt.close('all')
