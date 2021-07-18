@@ -22,7 +22,6 @@ import collections
 from datetime import datetime
 import os
 import re
-import sys
 import pandas as pd
 from numpy import float64
 from .graph_type import GraphType
@@ -40,7 +39,7 @@ from .graph_drawer import \
     draw_transactions_total_counts, \
     draw_transactions_year
 from .markdown_dumper import data_top_btc_dumper, data_total_dumper
-from .fs_tools import create_directory, create_file
+from .fs_tools import create_directory
 import seaborn as sns
 
 
@@ -49,6 +48,9 @@ pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 # Apply Seaborn default theme.
 sns.set_theme()
+
+# Init draw module.
+# init_draw()
 
 INPUTS = [
     '01-june2014.csv',
@@ -149,6 +151,7 @@ def process_month(csv_input: str,
     :param debug: debug flag.
     :param verbose: verbose flag.
     """
+    left_shift = 0.3
     if debug:
         print("*" * 10 + csv_input + "*" * 10)
         print(df[['vendor_name', 'usd', 'btc', 'rate']])
@@ -163,16 +166,16 @@ def process_month(csv_input: str,
     #    - Total amount of transaction per vendor.
 
     # boxplot
-    df_vendor_count = draw_transactions_counts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_COUNTS], date)
-    df_vendor_average_value = draw_transactions_average_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC], date)
-    df_vendor_max_value = draw_transactions_max_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_MAX_BTC], date)
-    df_vendor_sum_value = draw_transactions_sum_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_SUM_BTC], date)
+    df_vendor_count = draw_transactions_counts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_COUNTS], date, left_shift)
+    df_vendor_average_value = draw_transactions_average_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC], date, left_shift)
+    df_vendor_max_value = draw_transactions_max_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_MAX_BTC], date, left_shift)
+    df_vendor_sum_value = draw_transactions_sum_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_SUM_BTC], date, left_shift)
 
     # hbar
-    draw_transactions_count_greater_than(df_vendor_count, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_COUNTS], date)
-    draw_transactions_average_amounts_greater_than(df_vendor_average_value, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC], date)
-    draw_transactions_max_amounts_greater_than(df_vendor_max_value, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC], date)
-    draw_transactions_sum_amounts_greater_than(df_vendor_sum_value, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_SUM_BTC], date)
+    draw_transactions_count_greater_than(df_vendor_count, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_COUNTS], date, left_shift)
+    draw_transactions_average_amounts_greater_than(df_vendor_average_value, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC], date, left_shift)
+    draw_transactions_max_amounts_greater_than(df_vendor_max_value, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC], date, left_shift)
+    draw_transactions_sum_amounts_greater_than(df_vendor_sum_value, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_SUM_BTC], date, left_shift)
 
     md = data_top_btc_dumper(df_vendor_count,
                              df_vendor_average_value,
@@ -192,16 +195,16 @@ def process_month(csv_input: str,
     #    - Total amount of transaction per shipping locality.
 
     # boxplot
-    df_ship_from_count = draw_transactions_counts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_COUNTS], date)
-    df_ship_from_average_value = draw_transactions_average_amounts_repartition(df, "ship_from", outputs[ GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_AVERAGE_BTC], date)
-    df_ship_from_max_value = draw_transactions_max_amounts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_MAX_BTC], date)
-    df_ship_from_sum_value = draw_transactions_sum_amounts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_SUM_BTC], date)
+    df_ship_from_count = draw_transactions_counts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_COUNTS], date, left_shift)
+    df_ship_from_average_value = draw_transactions_average_amounts_repartition(df, "ship_from", outputs[ GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_AVERAGE_BTC], date, left_shift)
+    df_ship_from_max_value = draw_transactions_max_amounts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_MAX_BTC], date, left_shift)
+    df_ship_from_sum_value = draw_transactions_sum_amounts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_SUM_BTC], date, left_shift)
 
     # hbar
-    draw_transactions_count_greater_than(df_ship_from_count, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS], date)
-    draw_transactions_average_amounts_greater_than(df_ship_from_average_value, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC], date)
-    draw_transactions_max_amounts_greater_than(df_ship_from_max_value, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC], date)
-    draw_transactions_sum_amounts_greater_than(df_ship_from_sum_value, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC], date)
+    draw_transactions_count_greater_than(df_ship_from_count, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS], date, left_shift)
+    draw_transactions_average_amounts_greater_than(df_ship_from_average_value, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC], date, left_shift)
+    draw_transactions_max_amounts_greater_than(df_ship_from_max_value, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC], date, left_shift)
+    draw_transactions_sum_amounts_greater_than(df_ship_from_sum_value, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC], date, left_shift)
 
     md = data_top_btc_dumper(df_ship_from_count,
                              df_ship_from_average_value,
@@ -328,7 +331,8 @@ def run():
 
     if verbose:
         print("-" * 50)
-        print("Generate monthly graphs")
+        message = "Load CSV files" if skip else "Generate monthly graphs"
+        print(message)
         print("-" * 50)
 
     for csv_input in INPUTS:
@@ -350,14 +354,13 @@ def run():
         if not skip:
             process_month(csv_input, output_path, df, md_reports_paths, debug, verbose)
 
-
     # --------------------------------------------------------------------------
     # Generated documents for the whole series of months.
     # --------------------------------------------------------------------------
 
     if verbose:
         print("-" * 50)
-        print("Generate documents for the entire duration")
+        print("Generate documents for the entire time scale")
         print("-" * 50)
 
     # VBAR that shows transactions variations:
@@ -367,16 +370,16 @@ def run():
     create_directory(gd_path)
     total_amounts = draw_transactions_total_amounts(dataframes,
                                                     'btc',
-                                                    'Total amount of transactions in BTC',
                                                     gd_path,
-                                                    "Total amount of transactions in BTC")
+                                                    "Total amount of transactions in BTC",
+                                                    0.2)
 
     gd_path = "{}/transaction/{}".format(output_path, "total-count-vbar")
     create_directory(gd_path)
     total_counts = draw_transactions_total_counts(dataframes,
-                                                  'Total number of transactions',
                                                   gd_path,
-                                                  "Total number of transactions")
+                                                  "Total number of transactions",
+                                                  0.2)
 
     # Markdown table that shows transactions variations:
     # - total amounts.
@@ -396,7 +399,8 @@ def run():
     create_directory(gd_path)
     draw_transactions_year(dataframes,
                            "btc",
-                           gd_path)
+                           gd_path,
+                           0.2)
 
 
 run()

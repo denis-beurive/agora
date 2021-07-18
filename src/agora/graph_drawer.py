@@ -14,7 +14,8 @@ from .graph import hbar, vbar, single_boxplot, multiple_boxplot
 def draw_transactions_counts_repartition(data: pd.DataFrame,
                                          ref_name: str,
                                          output_path: str,
-                                         date: str) -> pd.DataFrame:
+                                         date: str,
+                                         left_shift: float) -> pd.DataFrame:
     """
     Generate a boxplot graph that represents the repartition of transactions, considering the total number of
     transactions per "reference". The "reference" is a column name specified by the parameter "ref_name". Typically,
@@ -24,6 +25,7 @@ def draw_transactions_counts_repartition(data: pd.DataFrame,
     :param ref_name: the name of the column to use as reference.
     :param output_path: path to the file used to store the representation.
     :param date: the date.
+    :param left_shift: left shift.
     :return: a data frame tha contains 2 columns:
              - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
              - the second column contains the total number of transactions per "reference". The name of this column
@@ -43,14 +45,16 @@ def draw_transactions_counts_repartition(data: pd.DataFrame,
                    None,
                    None,
                    output_path,
-                   title)
+                   title,
+                   left_shift)
     return sub_data
 
 
 def draw_transactions_average_amounts_repartition(data: pd.DataFrame,
                                                   ref_name: str,
                                                   output_path: str,
-                                                  date: str) -> pd.DataFrame:
+                                                  date: str,
+                                                  left_shift: float) -> pd.DataFrame:
     """
     Generate a boxplot graph that represents the repartition of transactions, considering the average transaction
     amount in BTC per "reference". The "reference" is a column name specified by the parameter "ref_name". Typically,
@@ -60,6 +64,7 @@ def draw_transactions_average_amounts_repartition(data: pd.DataFrame,
     :param ref_name: the name of the column to use as reference ("vendor_name" or "ship_from").
     :param output_path: path to the file used to store the representation.
     :param date: the date.
+    :param left_shift: left shift.
     :return: a data frame tha contains 2 columns:
          - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
          - the second column contains the average transaction amount per "reference" (which name is given
@@ -80,14 +85,16 @@ def draw_transactions_average_amounts_repartition(data: pd.DataFrame,
                    None,
                    None,
                    output_path,
-                   title)
+                   title,
+                   left_shift)
     return sub_data
 
 
 def draw_transactions_max_amounts_repartition(data: pd.DataFrame,
                                               ref_name: str,
                                               output_path: str,
-                                              date: str) -> pd.DataFrame:
+                                              date: str,
+                                              left_shift: float) -> pd.DataFrame:
     """
     Generate a boxplot graph that represents the repartition of transactions, considering the maximum transaction
     amount in BTC per "reference". The "reference" is a column name specified by the parameter "ref_name". Typically,
@@ -97,6 +104,7 @@ def draw_transactions_max_amounts_repartition(data: pd.DataFrame,
     :param ref_name: the name of the column to use as reference.
     :param output_path: path to the file used to store the representation.
     :param date: the date.
+    :param left_shift: left shift.
     :return: a data frame that contains 2 columns:
          - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
          - the second column contains the maximum transaction amount per "reference" (which name is given
@@ -116,14 +124,16 @@ def draw_transactions_max_amounts_repartition(data: pd.DataFrame,
                    None,
                    None,
                    output_path,
-                   title)
+                   title,
+                   left_shift)
     return sub_data
 
 
 def draw_transactions_sum_amounts_repartition(data: pd.DataFrame,
                                               ref_name: str,
                                               output_path: str,
-                                              date: str) -> pd.DataFrame:
+                                              date: str,
+                                              left_shift: float) -> pd.DataFrame:
     """
     Generate a boxplot graph that represents the repartition of transactions, considering the sum of all
     transaction amounts in BTC per "reference". The "reference" is a column name specified by the parameter
@@ -133,6 +143,7 @@ def draw_transactions_sum_amounts_repartition(data: pd.DataFrame,
     :param ref_name: the name of the column to use as reference.
     :param output_path: path to the file used to store the representation.
     :param date: the date.
+    :param left_shift: left shift.
     :return: a data frame that contains 2 columns:
          - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
          - the second column contains the sum of all transaction amounts per "reference" (which name is given
@@ -152,7 +163,8 @@ def draw_transactions_sum_amounts_repartition(data: pd.DataFrame,
                    None,
                    None,
                    output_path,
-                   title)
+                   title,
+                   left_shift)
     return sub_data
 
 
@@ -160,7 +172,8 @@ def draw_transactions_count_greater_than(data: pd.DataFrame,
                                          ref_name: str,
                                          top_count: int,
                                          output_path: str,
-                                         date: str) -> Optional[pd.DataFrame]:
+                                         date: str,
+                                         left_shift: float) -> Optional[pd.DataFrame]:
     """
     Generate a horizontal BAR diagram that represents the total number of transactions per "reference",
     for transactions counts greater than a given ceiling.
@@ -177,6 +190,7 @@ def draw_transactions_count_greater_than(data: pd.DataFrame,
     :param top_count: the number of "top" "references" to print.
     :param output_path: the path to the file used to store the graph.
     :param date: the date.
+    :param left_shift: left shift.
     :return: a data frame that contains 2 columns:
                 - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
                 - the second column contains the number of transaction "reference" (which name is given
@@ -198,7 +212,8 @@ def draw_transactions_count_greater_than(data: pd.DataFrame,
          "Total number of transactions",
          reference,
          output_path,
-         title)
+         title,
+         left_shift)
     return sub_data
 
 
@@ -206,7 +221,8 @@ def draw_transactions_average_amounts_greater_than(data: pd.DataFrame,
                                                    ref_name: str,
                                                    top_count: int,
                                                    output_path: str,
-                                                   date: str) -> Optional[pd.DataFrame]:
+                                                   date: str,
+                                                   left_shift: float) -> Optional[pd.DataFrame]:
     """
     Generate a horizontal BAR diagram that represents the average transaction amount (in BTC) per "reference",
     for transactions amounts greater than a given ceiling.
@@ -223,6 +239,7 @@ def draw_transactions_average_amounts_greater_than(data: pd.DataFrame,
     :param top_count: the number of "top" "references" to print.
     :param output_path: the path to the file used to store the graph.
     :param date: the date.
+    :param left_shift: left shift.
     :return: if there is at least one "reference" (vendor or shipping locality) that has
              a data frame that contains 2 columns:
                 - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
@@ -245,7 +262,8 @@ def draw_transactions_average_amounts_greater_than(data: pd.DataFrame,
          "Average amount per transactions in BTC",
          reference,
          output_path,
-         title)
+         title,
+         left_shift)
     return sub_data
 
 
@@ -253,7 +271,8 @@ def draw_transactions_max_amounts_greater_than(data: pd.DataFrame,
                                                ref_name: str,
                                                top_count: int,
                                                output_path: str,
-                                               date: str) -> Optional[pd.DataFrame]:
+                                               date: str,
+                                               left_shift: float) -> Optional[pd.DataFrame]:
     """
     Generate a horizontal BAR diagram that represents the maximum transaction amount (in BTC) per "reference",
     for transactions amounts greater than a given ceiling.
@@ -270,6 +289,7 @@ def draw_transactions_max_amounts_greater_than(data: pd.DataFrame,
     :param top_count: the number of "top" "references" to print.
     :param output_path: the path to the file used to store the graph.
     :param date: the date.
+    :param left_shift: left shift.
     :return: a data frame that contains 2 columns:
                 - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
                 - the second column contains the maximum transaction per "reference" (which name is given within the first
@@ -291,7 +311,8 @@ def draw_transactions_max_amounts_greater_than(data: pd.DataFrame,
          "Maximum amount per transactions in BTC",
          reference,
          output_path,
-         title)
+         title,
+         left_shift)
     return sub_data
 
 
@@ -299,7 +320,8 @@ def draw_transactions_sum_amounts_greater_than(data: pd.DataFrame,
                                                ref_name: str,
                                                top_count: int,
                                                output_path: str,
-                                               date: str) -> Optional[pd.DataFrame]:
+                                               date: str,
+                                               left_shift: float) -> Optional[pd.DataFrame]:
     """
     Generate a horizontal BAR diagram that represents the total amount of transaction (in BTC) per "reference",
     for total transactions amounts greater than a given ceiling.
@@ -316,6 +338,7 @@ def draw_transactions_sum_amounts_greater_than(data: pd.DataFrame,
     :param top_count: the number of "top" "references" to print.
     :param output_path: the path to the file used to store the graph.
     :param date: the date.
+    :param left_shift: left shift.
     :return: a data frame that contains 2 columns:
                 - the first column contains the "reference" names (and its name is given by the parameter "ref_name").
                 - the second column contains the total amount of transactions per "reference" (which name is given
@@ -337,15 +360,16 @@ def draw_transactions_sum_amounts_greater_than(data: pd.DataFrame,
          "Total amount of transaction in BTC",
          reference,
          output_path,
-         title)
+         title,
+         left_shift)
     return sub_data
 
 
 def draw_transactions_total_amounts(transactions: OrderedDict[str, pd.DataFrame],
                                     currency_name: str,
-                                    legend: str,
                                     output_path: str,
-                                    title: str) -> pd.DataFrame:
+                                    title: str,
+                                    left_shift: float) -> pd.DataFrame:
     """
     Draw a vertical BAR graph that represents the variation of the total amount of transaction in BTC of USD
     (depending on the currency of reference) over time.
@@ -359,6 +383,7 @@ def draw_transactions_total_amounts(transactions: OrderedDict[str, pd.DataFrame]
     :param legend: the legend.
     :param output_path: the path to the file used to store the graph.
     :param title: the title of the graph.
+    :param left_shift: left shift.
     :return: a data frame that contains 2 columns:
              - a column named "date".
              - a column named "total".
@@ -378,24 +403,24 @@ def draw_transactions_total_amounts(transactions: OrderedDict[str, pd.DataFrame]
     vbar(df,
          abscissa="date",
          ordinate="total",
-         legend=legend,
          output_path=output_path,
-         title=title)
+         title=title,
+         left_shift=left_shift)
     return df
 
 
 def draw_transactions_total_counts(transactions: OrderedDict[str, pd.DataFrame],
-                                   legend: str,
                                    output_path: str,
-                                   title: str) -> pd.DataFrame:
+                                   title: str,
+                                   left_shift: float) -> pd.DataFrame:
     """
     Draw a vertical BAR graph that represents the variation of the total number of transaction over time.
 
     :param transactions: an ordered dictionary which keys are the dates and the values are data frames that
                          contain the data loaded from the CSV file ("01-june2014.csv"...).
-    :param legend: the legend.
     :param output_path: the path to the file used to store the graph.
     :param title: the title of the graph.
+    :param left_shift: left shift.
     :return: a data frame that contains 2 columns:
              - a column named "date".
              - a column named "total".
@@ -415,15 +440,16 @@ def draw_transactions_total_counts(transactions: OrderedDict[str, pd.DataFrame],
     vbar(df,
          abscissa="date",
          ordinate="total",
-         legend=legend,
          output_path=output_path,
-         title=title)
+         title=title,
+         left_shift=left_shift)
     return df
 
 
 def draw_transactions_year(data: OrderedDict[str, pd.DataFrame],
                            ref_name: str,
-                           output_path: str) -> pd.DataFrame:
+                           output_path: str,
+                           left_shift: float) -> pd.DataFrame:
     """
     Generate a graph that represents the repartition of transactions (in "reference") per vendor and per month,
     in the form of a series of boxplots. Each boxplot shows the repartition of transactions  (in BTC) per vendor for
@@ -437,6 +463,7 @@ def draw_transactions_year(data: OrderedDict[str, pd.DataFrame],
     :param ref_name: the name of the column to use as data ("btc" or "usd").
     :param output_path: the path to the file used to store the graph.
     :param title: the title of the graph.
+    :param left_shift: left shift.
     :return: a Dataframes that contains 2 columns:
     - the first columns contains the names of the months.
     - the second columns contains the data associated with the months.
@@ -469,5 +496,6 @@ def draw_transactions_year(data: OrderedDict[str, pd.DataFrame],
                      'Date',
                      reference,
                      output_path,
-                     title)
+                     title,
+                     left_shift)
     return dataframe
