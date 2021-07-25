@@ -24,7 +24,8 @@ def set_graph_properties(abscissa_legend: Optional[str],
     :param output_path: path to the output file.
     :param title: image title.
     :param left_shift: left shift.
-    :return: a handler to the configured figure.
+    :return: a handler to the configured figure. Please note that you must close the returned figure
+             (see function matplotlib.pyplot.close).
     """
     fig = figure(figsize=(26, 16), dpi=80)
     if abscissa_legend is not None:
@@ -52,7 +53,7 @@ def vbar(data: pd.DataFrame,
          ordinate: str,
          output_path: str,
          title: str,
-         left_shift: float) -> None:
+         left_offset: float) -> None:
     """
     Draw an horizontal HBAR graph.
 
@@ -64,13 +65,13 @@ def vbar(data: pd.DataFrame,
                      Y-axis.
     :param output_path: the path to the output file.
     :param title: the graph title.
-    :param left_shift: left shift.
+    :param left_offset: offset between the left edge of the image and the y-axis.
     """
     fig = set_graph_properties(None,
                                None,
                                output_path,
                                title,
-                               left_shift)
+                               left_offset)
     sns.barplot(x=abscissa, y=ordinate, data=data, orient='v')
     if AUTO_SAVE:
         plt.savefig(output_path)
@@ -86,7 +87,7 @@ def hbar(data: pd.DataFrame,
          ordinate_legend: str,
          output_path: str,
          title: str,
-         left_shift: float) -> None:
+         left_offset: float) -> None:
     """
     Draw an horizontal HBAR graph.
 
@@ -100,13 +101,13 @@ def hbar(data: pd.DataFrame,
     :param ordinate_legend: the legend for the ordinate axis.
     :param output_path: the path to the output file.
     :param title: the graph title.
-    :param left_shift: left shift.
+    :param left_offset: offset between the left edge of the image and the y-axis.
     """
     fig = set_graph_properties(abscissa_legend,
                                ordinate_legend,
                                output_path,
                                title,
-                               left_shift)
+                               left_offset)
     sns.barplot(x=abscissa, y=ordinate, data=data, orient='h')
     if AUTO_SAVE:
         plt.savefig(output_path)
@@ -122,7 +123,7 @@ def single_boxplot(data: pd.DataFrame,
                    ordinate_legend: Optional[str],
                    output_path: str,
                    title: str,
-                   left_shift: float) -> None:
+                   left_offset: float) -> None:
     """
     Draw a boxplot graph.
 
@@ -135,13 +136,13 @@ def single_boxplot(data: pd.DataFrame,
     :param ordinate_legend: the legend for the ordinate axis. May be None.
     :param output_path: the path to the output file.
     :param title: the graph title.
-    :param left_shift: left shift.
+    :param left_offset: offset between the left edge of the image and the y-axis.
     """
     fig = set_graph_properties(abscissa_legend,
                                ordinate_legend,
                                output_path,
                                title,
-                               left_shift)
+                               left_offset)
     sns.violinplot(x=abscissa, y=ordinate, data=data)
     if AUTO_SAVE:
         plt.savefig(output_path)
@@ -157,12 +158,12 @@ def multiple_boxplot(data: pd.DataFrame,
                      ordinate_legend: str,
                      output_path: str,
                      title: str,
-                     left_shift: float):
+                     left_offset: float):
     """
     Draw a series of violin boxplots.
 
     :param data: a dataframe that contains the data used to generate the graph. Please note that this dataframe must
-                contains at least 2 columns which names are given by the parameters "abscissa" and "ordinate".
+                 contains at least 2 columns which names are given by the parameters "abscissa" and "ordinate".
     :param abscissa: the name of the column (within the dataframe "data") that contains the values to be printed on the
                      X-axis.
     :param ordinate: the name of the column (within the dataframe "data") that contains the values to be printed on the
@@ -171,13 +172,13 @@ def multiple_boxplot(data: pd.DataFrame,
     :param ordinate_legend: the legend for the ordinate axis.
     :param output_path: the path to the output file.
     :param title: the graph title.
-    :param left_shift: left shift.
+    :param left_offset: offset between the left edge of the image and the y-axis.
     """
     fig = set_graph_properties(abscissa_legend,
                                ordinate_legend,
                                output_path,
                                title,
-                               left_shift)
+                               left_offset)
     sns.violinplot(x=abscissa, y=ordinate, data=data)
     if AUTO_SAVE:
         plt.savefig(output_path)

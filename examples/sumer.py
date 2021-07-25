@@ -10,7 +10,7 @@ def draw_transactions_total_amounts(transactions: OrderedDict[str, pd.DataFrame]
     df['total'] = [d[ref_name].sum() for d in transactions.values()]
 
     # for label, dataframe in transactions.items():
-    #     series: pd.Series = dataframe[ref_name]
+    #     series: pd.Series = dataframe[currency]
     #     df[label] = [series.sum()]
 
     return df

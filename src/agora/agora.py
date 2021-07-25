@@ -11,8 +11,13 @@
 
         python -m agora.agora --verbose --skip ./data ./output
 
+    Test and skip:
+
+        python -m agora.agora --verbose --test --skip ./data ./output
+
     Note: make sure to initialise the Python environment first! (read the file README.md)
 
+        pipenv shell
         pipenv install --dev
 """
 
@@ -37,7 +42,8 @@ from .graph_drawer import \
     draw_transactions_sum_amounts_greater_than, \
     draw_transactions_total_amounts, \
     draw_transactions_total_counts, \
-    draw_transactions_year
+    draw_whole_period_transaction_amounts_per_vendor, \
+    draw_whole_period_transactions_counts_per_vendor
 from .markdown_dumper import data_top_btc_dumper, data_total_dumper
 from .fs_tools import create_directory
 import seaborn as sns
@@ -48,9 +54,6 @@ pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 # Apply Seaborn default theme.
 sns.set_theme()
-
-# Init draw module.
-# init_draw()
 
 INPUTS = [
     '01-june2014.csv',
@@ -76,6 +79,7 @@ Tell whether to load only the minimal set of data from the CSV files. The value 
 to load only the minimal set of data. This will greatly accelerate the entire process.
 """
 TOP_COUNT = 30
+TEST_MODE_COUNT = 1000
 
 
 def csv_loader(path: str, load_minimal: bool = USE_MINIMAL_SET, max_rows: Optional[int] = None) -> pd.DataFrame:
@@ -86,9 +90,9 @@ def csv_loader(path: str, load_minimal: bool = USE_MINIMAL_SET, max_rows: Option
 
     :param path: path to the CSV file to load.
     :param load_minimal: tell whether to load only the minimum set of data or not.
-    If the parameter value is True, then only the minimum set of data is loaded.
+                         If the parameter value is True, then only the minimum set of data is loaded.
     :param max_rows: maximum number of rows to load.
-    The value None means "no maximum value".
+                     The value None means "no maximum value".
     :return: the loaded data.
     """
 
@@ -324,6 +328,18 @@ def run():
 
     md_reports_paths = get_output_md_files(output_path)
     dataframes: OrderedDict[str, pd.DataFrame] = collections.OrderedDict()
+    """
+       This data frame contains all data loaded from the CSV files. The structure of this data frame is:
+       { month1 => dataframe1,
+         month2 => dataframe2,
+         ... }
+         
+       With "month<N>": "june2014", "july2014"... 
+       The structure of "dataframe<N>" depends on the CSV loading policies. With minimal loading, we have 3 columns:
+           - 'btc'
+           - 'ship_from'
+           - 'vendor_name'       
+    """
 
     # --------------------------------------------------------------------------
     # Generated documents for all months, individually.
@@ -339,7 +355,7 @@ def run():
 
         # Load CSV file.
         csv_path = "{}/{}".format(input_path, csv_input)
-        maximum = 200 if test_mode else None
+        maximum = TEST_MODE_COUNT if test_mode else None
         if verbose:
             print('Loading "{}" (maximum row: {})'.format(csv_path, "not set" if maximum is None else maximum))
         df: pd.DataFrame = csv_loader(csv_path, USE_MINIMAL_SET, maximum)
@@ -394,13 +410,35 @@ def run():
         fd.write("# Total number of transactions per month\n\n")
         fd.write("{}\n\n".format(md))
 
-    # List of boxplots: repartition of transaction amounts per vendors and per month.
-    gd_path = "{}/transaction/{}".format(output_path, "boxplot-year")
+    # List of boxplots: repartition of transaction amounts per vendor.
+    gd_path = "{}/transaction/{}".format(output_path, "boxplot-amount-year")
     create_directory(gd_path)
-    draw_transactions_year(dataframes,
-                           "btc",
-                           gd_path,
-                           0.2)
+    draw_whole_period_transaction_amounts_per_vendor(dataframes,
+                                                     "btc",
+                                                     gd_path,
+                                                     0.2)
 
+    gd_path = "{}/transaction/{}".format(output_path, "boxplot-top-amount-year")
+    create_directory(gd_path)
+    draw_whole_period_transaction_amounts_per_vendor(dataframes,
+                                                     "btc",
+                                                     gd_path,
+                                                     0.2,
+                                                     0.15)
+
+    # List of boxplots: repartition of transaction counts per vendor.
+    gd_path = "{}/transaction/{}".format(output_path, "boxplot-count-year")
+    create_directory(gd_path)
+    draw_whole_period_transactions_counts_per_vendor(dataframes,
+                                                     gd_path,
+                                                     0.2)
+
+    gd_path = "{}/transaction/{}".format(output_path, "boxplot-top-count-year")
+    create_directory(gd_path)
+    draw_whole_period_transaction_amounts_per_vendor(dataframes,
+                                                     "btc",
+                                                     gd_path,
+                                                     0.2,
+                                                     2000)
 
 run()

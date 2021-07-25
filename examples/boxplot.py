@@ -22,6 +22,8 @@ def generate_ordinate() -> List[int]:
 df = pd.DataFrame({'abscissa': generate_abscissa(),
                    'ordinate': generate_ordinate()})
 
+print(df)
+
 fig = px.box(df, x="abscissa", y="ordinate")
 fig.show()
 
