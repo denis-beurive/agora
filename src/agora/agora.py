@@ -9,11 +9,11 @@
 
     Skip the generation of monthly graphs:
 
-        python -m agora.agora --verbose --skip ./data ./output
+        python -m agora.agora --verbose --skip-monthly ./data ./output
 
-    Test and skip:
+    Test and skip monthly graphs:
 
-        python -m agora.agora --verbose --test --skip ./data ./output
+        python -m agora.agora --verbose --test --skip-monthly ./data ./output
 
     Note: make sure to initialise the Python environment first! (read the file README.md)
 
@@ -21,7 +21,7 @@
         pipenv install --dev
 """
 
-from typing import Pattern, Match, Dict, OrderedDict, Optional
+from typing import Pattern, Match, Dict, OrderedDict, Optional, List
 import argparse
 import collections
 from datetime import datetime
@@ -47,6 +47,7 @@ from .graph_drawer import \
 from .markdown_dumper import data_top_btc_dumper, data_total_dumper
 from .fs_tools import create_directory
 import seaborn as sns
+from .stat import calculate_boxplot_data, BoxPlotData
 
 
 # Set options for Pandas.
@@ -276,6 +277,26 @@ def get_output_md_files(output_directory: str) -> Dict[MdType, str]:
     return paths
 
 
+def get_month_max_upper_fence(data: pd.DataFrame, column: str) -> float:
+    """
+    Given a data frame that contains "data per month", this function returns the maximum value for the upper fence
+    calculated from the data associated with each month.
+
+    :param data: data frame that contains at least 2 columns:
+                 - a column named "month"
+                 - another column which name is given by the parameter "column".
+    :param column: the name of the column upon which the upper fence values are calculated.
+    :return: the maximum upper fence value.
+    """
+    months = data['month'].unique()
+    upper_fences: List[float] = []
+    for month in months:
+        df: pd.DataFrame = data.query('month == "{}"'.format(month))
+        bp = calculate_boxplot_data(df, column)
+        upper_fences.append(bp.upper_fence)
+    return max(upper_fences)
+
+
 def run():
     """
     Execute the module.
@@ -296,11 +317,16 @@ def run():
                         action='store_true',
                         default=False,
                         help='activate the test mode')
-    parser.add_argument('--skip',
-                        dest='skip',
+    parser.add_argument('--skip-monthly',
+                        dest='skip_monthly',
                         action='store_true',
                         default=False,
-                        help='skip the generation of month graphs')
+                        help='skip the generation of monthly graphs')
+    parser.add_argument('--skip-if_exists',
+                        dest='skip_if_exists',
+                        action='store_true',
+                        default=False,
+                        help='skip the generation a graph if ot already exists')
     parser.add_argument('input_path',
                         action='store',
                         nargs=1,
@@ -318,13 +344,15 @@ def run():
     verbose: bool = args.verbose
     debug: bool = args.debug
     test_mode: bool = args.test
-    skip: bool = args.skip
+    skip_monthly: bool = args.skip_monthly
+    skip_if_exists: bool = args.skip_if_exists
 
     if verbose:
         print('input directory:       {}'.format(input_path))
         print('output directory:      {}'.format(output_path))
         print('test mode activated:   {}'.format("yes" if test_mode else "no"))
-        print('skip monthly graphs:   {}'.format("yes" if skip else "no"))
+        print('skip monthly graphs:   {}'.format("yes" if skip_monthly else "no"))
+        print('skip if exists:        {}'.format("yes" if skip_if_exists else "no"))
 
     md_reports_paths = get_output_md_files(output_path)
     dataframes: OrderedDict[str, pd.DataFrame] = collections.OrderedDict()
@@ -347,7 +375,7 @@ def run():
 
     if verbose:
         print("-" * 50)
-        message = "Load CSV files" if skip else "Generate monthly graphs"
+        message = "Load CSV files" if skip_monthly else "Generate monthly graphs"
         print(message)
         print("-" * 50)
 
@@ -367,7 +395,7 @@ def run():
         # Store the dataframe for later use.
         dataframes[csv_input[3:-4]] = df
 
-        if not skip:
+        if not skip_monthly:
             process_month(csv_input, output_path, df, md_reports_paths, debug, verbose)
 
     # --------------------------------------------------------------------------
@@ -410,35 +438,35 @@ def run():
         fd.write("# Total number of transactions per month\n\n")
         fd.write("{}\n\n".format(md))
 
-    # List of boxplots: repartition of transaction amounts per vendor.
-    gd_path = "{}/transaction/{}".format(output_path, "boxplot-amount-year")
-    create_directory(gd_path)
-    draw_whole_period_transaction_amounts_per_vendor(dataframes,
-                                                     "btc",
-                                                     gd_path,
-                                                     0.2)
+    # List of boxplot: repartition of transaction amounts per vendor.
+    gd_path = "{}/transaction/{}".format(output_path, "boxplot-amount-per-vendor-year")
+    if skip_if_exists and os.path.exists(gd_path):
+        pass
+    else:
+        create_directory(gd_path)
+        d = draw_whole_period_transaction_amounts_per_vendor(dataframes,
+                                                             'btc',
+                                                             gd_path,
+                                                             0.2)
 
-    gd_path = "{}/transaction/{}".format(output_path, "boxplot-top-amount-year")
-    create_directory(gd_path)
-    draw_whole_period_transaction_amounts_per_vendor(dataframes,
-                                                     "btc",
-                                                     gd_path,
-                                                     0.2,
-                                                     0.15)
+    # List of boxplot: repartition of transaction counts per vendor.
+    gd_path = "{}/transaction/{}".format(output_path, "boxplot-count-per-vendor-year")
+    if skip_if_exists and os.path.exists(gd_path):
+        pass
+    else:
+        create_directory(gd_path)
+        d = draw_whole_period_transactions_counts_per_vendor(dataframes,
+                                                             gd_path,
+                                                             0.2)
+        maximum = get_month_max_upper_fence(d, 'count')
 
-    # List of boxplots: repartition of transaction counts per vendor.
-    gd_path = "{}/transaction/{}".format(output_path, "boxplot-count-year")
-    create_directory(gd_path)
-    draw_whole_period_transactions_counts_per_vendor(dataframes,
-                                                     gd_path,
-                                                     0.2)
+        gd_path = "{}/transaction/{}".format(output_path, "boxplot-top-count-per-vendor-year")
+        create_directory(gd_path)
+        draw_whole_period_transactions_counts_per_vendor(dataframes,
+                                                         gd_path,
+                                                         0.2,
+                                                         -700,
+                                                         1500)
 
-    gd_path = "{}/transaction/{}".format(output_path, "boxplot-top-count-year")
-    create_directory(gd_path)
-    draw_whole_period_transaction_amounts_per_vendor(dataframes,
-                                                     "btc",
-                                                     gd_path,
-                                                     0.2,
-                                                     2000)
 
 run()

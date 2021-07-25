@@ -143,7 +143,7 @@ def single_boxplot(data: pd.DataFrame,
                                output_path,
                                title,
                                left_offset)
-    sns.violinplot(x=abscissa, y=ordinate, data=data)
+    sns.violinplot(x=abscissa, y=ordinate, data=data, inner='box')
     if AUTO_SAVE:
         plt.savefig(output_path)
     else:
@@ -158,7 +158,9 @@ def multiple_boxplot(data: pd.DataFrame,
                      ordinate_legend: str,
                      output_path: str,
                      title: str,
-                     left_offset: float):
+                     left_offset: float,
+                     floor: Optional[float] = None,
+                     ceiling: Optional[float] = None):
     """
     Draw a series of violin boxplots.
 
@@ -179,7 +181,11 @@ def multiple_boxplot(data: pd.DataFrame,
                                output_path,
                                title,
                                left_offset)
-    sns.violinplot(x=abscissa, y=ordinate, data=data)
+    if floor is not None:
+        plt.ylim(bottom=floor)
+    if ceiling is not None:
+        plt.ylim(top=ceiling)
+    sns.violinplot(x=abscissa, y=ordinate, data=data, inner='box')
     if AUTO_SAVE:
         plt.savefig(output_path)
     else:

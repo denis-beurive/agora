@@ -3,7 +3,7 @@ This file implements all the functions used to generate graphs.
 """
 
 import pandas as pd
-from typing import OrderedDict, Optional
+from typing import OrderedDict, Optional, Dict
 from .stat import get_count_per_column_value, \
     get_average_per_column_value, \
     get_max_per_column_value, \
@@ -449,7 +449,8 @@ def draw_whole_period_transaction_amounts_per_vendor(data: OrderedDict[str, pd.D
                                                      currency: str,
                                                      output_path: str,
                                                      left_offset: float,
-                                                     ceiling: float = 0) -> pd.DataFrame:
+                                                     floor: Optional[float] = None,
+                                                     ceiling: Optional[float] = None) -> pd.DataFrame:
     """
     Generate a graph that represents the repartition of transaction amounts (in a given currency) per vendor per month,
     in the form of a series of boxplots. Each boxplot shows the repartition of transaction amounts (in the given
@@ -468,6 +469,7 @@ def draw_whole_period_transaction_amounts_per_vendor(data: OrderedDict[str, pd.D
     :param currency: the name of the column that contains the transactions amounts (can be "btc" or "usd").
     :param output_path: the path to the file used to store the graph.
     :param left_offset: offset between the left edge of the image and the y-axis.
+    :param floor: le lowest value for y-axis.
     :param ceiling: the maximum amount to keep for the representation.
                     If you do not set this value the graph is just not readable.
     :return: a Dataframes that contains 2 columns:
@@ -505,8 +507,6 @@ def draw_whole_period_transaction_amounts_per_vendor(data: OrderedDict[str, pd.D
         for vendor in vendors:
             df_vendor: pd.DataFrame = values.query('vendor_name == "{}"'.format(vendor))
             total = df_vendor[currency].sum(axis=0, skipna=True)
-            if 0 < ceiling < total:
-                continue
             dataframe.loc[idx] = [total, month]
             idx += 1
 
@@ -521,14 +521,17 @@ def draw_whole_period_transaction_amounts_per_vendor(data: OrderedDict[str, pd.D
                      currency,
                      output_path,
                      "Total amount of transactions in {} per vendor".format(currency.upper()),
-                     left_offset)
+                     left_offset,
+                     floor,
+                     ceiling)
     return new_df
 
 
 def draw_whole_period_transactions_counts_per_vendor(data: OrderedDict[str, pd.DataFrame],
                                                      output_path: str,
                                                      left_offset: float,
-                                                     ceiling: float = 0) -> pd.DataFrame:
+                                                     floor: Optional[float] = None,
+                                                     ceiling: Optional[float] = None) -> pd.DataFrame:
     """
     Generate a graph that represents the repartition of transaction counts per vendors per month, in the form
     of a series of boxplots. Each boxplot shows the repartition of transaction counts per vendor for a given
@@ -542,6 +545,7 @@ def draw_whole_period_transactions_counts_per_vendor(data: OrderedDict[str, pd.D
                  Each value "dataframe<N>" must contain the column "vendor_name".
     :param output_path: the path to the file used to store the graph.
     :param left_offset: offset between the left edge of the image and the y-axis.
+    :param floor: le lowest value for y-axis.
     :param ceiling: the maximum amount to keep for the representation.
                     If you do not set this value the graph is just not readable.
     :return: a Dataframes that contains 2 columns:
@@ -574,8 +578,6 @@ def draw_whole_period_transactions_counts_per_vendor(data: OrderedDict[str, pd.D
         for vendor in vendors:
             df_vendor: pd.DataFrame = values.query('vendor_name == "{}"'.format(vendor))
             count = len(df_vendor.index)
-            if 0 < ceiling < count:
-                continue
             dataframe.loc[idx] = [count, month]
             idx += 1
 
@@ -590,5 +592,7 @@ def draw_whole_period_transactions_counts_per_vendor(data: OrderedDict[str, pd.D
                      'Total number of transactions',
                      output_path,
                      "Total number of transactions per vendor",
-                     left_offset)
+                     left_offset,
+                     floor,
+                     ceiling)
     return new_df

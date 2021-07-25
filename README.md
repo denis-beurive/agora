@@ -18,9 +18,17 @@ For test (load only 200 rows per CSV file):
 
 Skip the generation of monthly graphs:
 
-    python -m agora.agora --verbose --skip ./data ./output
+    python -m agora.agora --verbose --skip-monthly ./data ./output
 
-> **Note**: make sure to initialise the Python environment first! (`pipenv shell` followed by `pipenv install --dev`).
+Skip the generation of _some graphs_ if they already exist:
+
+    python -m agora.agora --verbose --skip-if-exists ./data ./output
+
+> **Note**: make sure to initialise the Python environment first!
+> 
+> * `pipenv shell`
+> * `pipenv install --dev`
+> 
 > Please read the [installation guide](doc/installation.md) and the [notes about wheels](doc/wheel-notes.md) if
 > see errors.
 > 
