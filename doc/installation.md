@@ -7,6 +7,18 @@ This document describes that installation process.
 If necessary, install `pipenv`:
 
     sudo apt install pipenv
+    pip install pipenv -U
+
+> The second command (`pip install pipenv -U`) is very important.
+> It updates `pipenv`. You **MUST** use the **LAST** version of `pipenv`.
+
+# Update pipenv (mandatory)
+
+You **MUST** use the **LAST** version of `pipenv`.
+
+    pip install pipenv -U
+
+> See [this post](https://github.com/pypa/pipenv/issues/1658#issuecomment-453000662)
 
 # Setup a virtual environment
 

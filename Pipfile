@@ -11,6 +11,7 @@ matplotlib = "*"
 seaborn = "*"
 PyQt5 = "*"
 pyperclip = "*"
+sklearn = "*"
 
 [dev-packages]
 pylint = "*"

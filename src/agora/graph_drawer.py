@@ -3,7 +3,7 @@ This file implements all the functions used to generate graphs.
 """
 
 import pandas as pd
-from typing import OrderedDict, Optional, Dict
+from typing import OrderedDict, Optional
 from .stat import get_count_per_column_value, \
     get_average_per_column_value, \
     get_max_per_column_value, \

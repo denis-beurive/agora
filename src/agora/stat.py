@@ -2,7 +2,7 @@
 This file implements functions that perform common operations on dataframes.
 """
 
-from typing import Callable, Tuple
+from typing import Callable
 from dataclasses import dataclass
 import pandas as pd
 from statistics import mean, median
@@ -110,7 +110,7 @@ def get_stat_per_column_value(in_data: pd.DataFrame,
                 2  50  stat_function([5])
 
     :param in_data: the data frame.
-    :param group_by_column_name: the name of the column upon which data are groped.
+    :param group_by_column_name: the name of the column upon which data are grouped.
     :param value_column_name: the name of the column upon which the series are created.
     :param function: the function to apply on the series. The function signature must be:
                      stat_function(data: list) -> Union[int, float]

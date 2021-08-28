@@ -12,6 +12,8 @@ Usage (from the **project root folder**):
 
     python -m agora.agora --verbose ./data ./output
 
+> Make sure that you've executed "pipenv install --dev" first! Please read the installation section.
+
 For test (load only 200 rows per CSV file):
 
     python -m agora.agora --verbose --test ./data ./output
