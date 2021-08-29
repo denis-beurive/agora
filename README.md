@@ -26,9 +26,38 @@ Usage (from the **project root folder**):
 > 
 > You can delete all previously generated documents: `find ./output -name "*.svg" -exec rm {} \;`
 
+## Results
+
+Please click on [this link](report.md).
+
 ## Dev and tests
 
-For test (load only 200 rows per CSV file):
+**Usage**:
+
+```shell
+$ python -m agora.agora --help
+usage: agora.py [-h] [--verbose] [--debug] [--test] [--skip-monthly] [--skip-if-exists] [--km-only] input_path output_path
+
+Agora stat builder
+
+positional arguments:
+  input_path        path to the input directory
+  output_path       path to the output directory
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --verbose         activate the verbose mode
+  --debug           activate the debug mode
+  --test            activate the test mode
+  --skip-monthly    skip the generation of monthly graphs
+  --skip-if-exists  skip the generation a graph if ot already exists
+  --km-only         only generate KMeans data
+(agora-XPqCgF3T) denis@labo:~/Documents/github/agora
+```
+
+**Examples for tests**:
+
+Load only 1000 rows per CSV file (make execution faster):
 
     python -m agora.agora --verbose --test ./data ./output
 
@@ -39,15 +68,3 @@ Skip the generation of monthly documents:
 Skip the generation of _some documents_ (the ones that take very long time to generate) if they already exist:
 
     python -m agora.agora --verbose --skip-if-exists ./data ./output
-
-# Running the unit tests
-    
-    python run_unittest.py --verbose
-
-# Documents
-
-* [transactions per vendors](output/vendor/transactions.md)
-* [transactions per shipping locality](output/ship-from/transactions.md)
-* [total amount of transactions per month](output/transaction/total-transactions.md)
-* [total number of transactions per month](output/transaction/total-transactions.md)
-
