@@ -309,9 +309,9 @@ def get_output_dated_files(output_directory: str,
         GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC: "{}/ship-from/transactions-max/{}".format(output_directory, "{}/transactions-max-btc-hbar".format(date_prefix)),
         GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC: "{}/ship-from/transactions-sum/{}".format(output_directory, "{}/transactions-sum-btc-hbar".format(date_prefix)),
 
-        GraphType.KMEAN_COUNT_TOTAL_AMOUNT: "{}/kmeans/{}".format(output_directory, "km_{}_total_amount_count".format(date_prefix)),
-        GraphType.KMEAN_COUNT_MEAN_AMOUNT: "{}/kmeans/{}".format(output_directory, "km_{}_mean_amount_count".format(date_prefix)),
-        GraphType.KMEAN_COUNT_MEDIAN_AMOUNT: "{}/kmeans/{}".format(output_directory, "km_{}_median_amount_count".format(date_prefix)),
+        GraphType.KMEAN_COUNT_TOTAL_AMOUNT: "{}/kmeans/{}".format(output_directory, "km_{}_total_amount_count.md".format(date_prefix)),
+        GraphType.KMEAN_COUNT_MEAN_AMOUNT: "{}/kmeans/{}".format(output_directory, "km_{}_mean_amount_count.md".format(date_prefix)),
+        GraphType.KMEAN_COUNT_MEDIAN_AMOUNT: "{}/kmeans/{}".format(output_directory, "km_{}_median_amount_count.md".format(date_prefix)),
     }
 
     for path in paths.values():

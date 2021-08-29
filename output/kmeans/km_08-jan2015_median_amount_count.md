@@ -5,81 +5,6 @@
 
 ## Centroid 0
 
-| vendor_name       |   count |      btc |
-|:------------------|--------:|---------:|
-| AM123             |       1 |  6.53108 |
-| AgentSmith008     |       1 | 10.3183  |
-| AusMate           |       1 |  3.94428 |
-| Aus_Postman_Pat   |       1 |  6.03514 |
-| BestConnect       |       1 |  8.37006 |
-| BulkShipping      |       1 | 13.6382  |
-| CMOT              |       1 |  4.04872 |
-| ChinaChem         |       1 |  3.56897 |
-| CokeMate          |       1 |  4.06123 |
-| DakotaFred        |       1 |  4.40313 |
-| DankIndoorsNW     |       1 |  4.44126 |
-| Druglord          |       1 |  8.71689 |
-| DutchMasters      |       1 |  3.33322 |
-| FAST_DRUGS        |       1 |  3.56159 |
-| FlyingKangaroo    |       1 |  3.80259 |
-| GandoffWhite      |       1 |  5.25486 |
-| GanjaFarmer       |       1 |  6.17436 |
-| GoombaShop        |       1 |  6.1799  |
-| Green-Machine     |       1 |  3.47072 |
-| HollandDutch      |       1 |  9.18572 |
-| HonestCocaine     |       1 |  5.17241 |
-| JRJRJR            |       1 | 15.4483  |
-| MeGrimlock        |       1 |  3.56367 |
-| MoodyMayhem       |       1 |  4.7336  |
-| MrBudget          |       1 |  6.26441 |
-| MrCocaina         |       1 | 11.4358  |
-| NCBB              |       1 |  7.10952 |
-| OrangeInc         |       1 |  4.37009 |
-| PerfectScans      |       1 |  4.6115  |
-| Persephone        |       1 | 16.2752  |
-| PremiumIMPORT     |       1 |  3.39978 |
-| Shiny-Flakes      |       1 |  4.04624 |
-| SocksRocksLocks   |       1 |  4       |
-| StealthBomber     |       1 |  3.39281 |
-| Superdrugs        |       1 |  4.17143 |
-| TheGreenHouse     |       1 |  3.70863 |
-| USdank            |       1 | 11.6156  |
-| UltraViolet-Agora |       1 |  3.3095  |
-| VGer              |       1 |  3.36503 |
-| VerdeLimon        |       1 |  4.63734 |
-| Warbeast          |       1 |  4.95432 |
-| WarehouseDirect   |       1 |  5.12663 |
-| WeedstarEnergy    |       1 |  4.67974 |
-| WhiteStallion     |       1 |  4.32107 |
-| XTandMD           |       1 |  3.82809 |
-| arctic            |       1 |  3.38776 |
-| bcbuds            |       1 |  7.18089 |
-| boosie5150        |       1 |  4.50098 |
-| checkpoint        |       1 |  7.18644 |
-| gold              |       1 |  3.92639 |
-| insta_grams       |       1 |  4.22368 |
-| jesusofrave       |       1 | 21.2324  |
-| kobrivoje         |       1 |  3.97913 |
-| levelhead         |       1 |  3.71713 |
-| luckyluciannomdma |       1 |  5.42042 |
-| onelove321        |       1 |  5.7592  |
-| p3nd8s            |       1 |  4.68604 |
-| purebase          |       1 |  4.33733 |
-| tinacmarks        |       1 |  3.70982 |
-| weednation        |       1 |  8.71169 |
-
-## Centroid 1
-
-| vendor_name        |   count |     btc |
-|:-------------------|--------:|--------:|
-| CheapBulkWeed      |       1 | 46.3664 |
-| Dutchhouse         |       1 | 27.3698 |
-| MonsieurBlanc      |       1 | 37.4379 |
-| Tesco-Direct       |       1 | 67.7553 |
-| chemicalprincess13 |       1 | 46.1207 |
-
-## Centroid 2
-
 | vendor_name                   |   count |        btc |
 |:------------------------------|--------:|-----------:|
 | Australia                     |       1 | 0.772678   |
@@ -1022,4 +947,79 @@
 | zeltasgarden                  |       1 | 0.491226   |
 | zunidog                       |       1 | 0.341775   |
 | ~BigBoy                       |       1 | 0.331113   |
+
+## Centroid 1
+
+| vendor_name        |   count |     btc |
+|:-------------------|--------:|--------:|
+| CheapBulkWeed      |       1 | 46.3664 |
+| Dutchhouse         |       1 | 27.3698 |
+| MonsieurBlanc      |       1 | 37.4379 |
+| Tesco-Direct       |       1 | 67.7553 |
+| chemicalprincess13 |       1 | 46.1207 |
+
+## Centroid 2
+
+| vendor_name       |   count |      btc |
+|:------------------|--------:|---------:|
+| AM123             |       1 |  6.53108 |
+| AgentSmith008     |       1 | 10.3183  |
+| AusMate           |       1 |  3.94428 |
+| Aus_Postman_Pat   |       1 |  6.03514 |
+| BestConnect       |       1 |  8.37006 |
+| BulkShipping      |       1 | 13.6382  |
+| CMOT              |       1 |  4.04872 |
+| ChinaChem         |       1 |  3.56897 |
+| CokeMate          |       1 |  4.06123 |
+| DakotaFred        |       1 |  4.40313 |
+| DankIndoorsNW     |       1 |  4.44126 |
+| Druglord          |       1 |  8.71689 |
+| DutchMasters      |       1 |  3.33322 |
+| FAST_DRUGS        |       1 |  3.56159 |
+| FlyingKangaroo    |       1 |  3.80259 |
+| GandoffWhite      |       1 |  5.25486 |
+| GanjaFarmer       |       1 |  6.17436 |
+| GoombaShop        |       1 |  6.1799  |
+| Green-Machine     |       1 |  3.47072 |
+| HollandDutch      |       1 |  9.18572 |
+| HonestCocaine     |       1 |  5.17241 |
+| JRJRJR            |       1 | 15.4483  |
+| MeGrimlock        |       1 |  3.56367 |
+| MoodyMayhem       |       1 |  4.7336  |
+| MrBudget          |       1 |  6.26441 |
+| MrCocaina         |       1 | 11.4358  |
+| NCBB              |       1 |  7.10952 |
+| OrangeInc         |       1 |  4.37009 |
+| PerfectScans      |       1 |  4.6115  |
+| Persephone        |       1 | 16.2752  |
+| PremiumIMPORT     |       1 |  3.39978 |
+| Shiny-Flakes      |       1 |  4.04624 |
+| SocksRocksLocks   |       1 |  4       |
+| StealthBomber     |       1 |  3.39281 |
+| Superdrugs        |       1 |  4.17143 |
+| TheGreenHouse     |       1 |  3.70863 |
+| USdank            |       1 | 11.6156  |
+| UltraViolet-Agora |       1 |  3.3095  |
+| VGer              |       1 |  3.36503 |
+| VerdeLimon        |       1 |  4.63734 |
+| Warbeast          |       1 |  4.95432 |
+| WarehouseDirect   |       1 |  5.12663 |
+| WeedstarEnergy    |       1 |  4.67974 |
+| WhiteStallion     |       1 |  4.32107 |
+| XTandMD           |       1 |  3.82809 |
+| arctic            |       1 |  3.38776 |
+| bcbuds            |       1 |  7.18089 |
+| boosie5150        |       1 |  4.50098 |
+| checkpoint        |       1 |  7.18644 |
+| gold              |       1 |  3.92639 |
+| insta_grams       |       1 |  4.22368 |
+| jesusofrave       |       1 | 21.2324  |
+| kobrivoje         |       1 |  3.97913 |
+| levelhead         |       1 |  3.71713 |
+| luckyluciannomdma |       1 |  5.42042 |
+| onelove321        |       1 |  5.7592  |
+| p3nd8s            |       1 |  4.68604 |
+| purebase          |       1 |  4.33733 |
+| tinacmarks        |       1 |  3.70982 |
+| weednation        |       1 |  8.71169 |
 
