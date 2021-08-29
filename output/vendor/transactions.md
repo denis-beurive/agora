@@ -1,15 +1,15 @@
 # july2015
 
-| top count     |   count | top average (BTC)   |   average | top maximum (BTC)   |   maximum | top total (BTC)   |     total |
-|:--------------|--------:|:--------------------|----------:|:--------------------|----------:|:------------------|----------:|
-| alisdrugstore |     101 | AmishMafia          | 133.714   | AmishMafia          | 133.714   | AmishMafia        | 1337.14   |
-| Aracay        |      99 | AGP                 |  20.4054  | alchemycd           |  20.4054  | alchemycd         |  987.859  |
-| alchemycd     |      75 | alchemycd           |  13.1715  | Aracay              |  13.1715  | Amsint            |  362.272  |
-| Amsint        |      64 | 2ndamendman         |   8.24233 | AGP                 |   8.24233 | Aracay            |  131.686  |
-| China         |      63 | Amsint              |   5.66051 | Amsint              |   5.66051 | alisdrugstore     |   76.7841 |
-| Apotheke      |      55 | Ace_Of_Spades       |   4.73467 | Ace_Of_Spades       |   4.73467 | Ace_Of_Spades     |   75.7548 |
-| 420TQC        |      35 | 1onestop            |   4.23074 | 1onestop            |   4.23074 | 1onestop          |   54.9996 |
-| Addyshack     |      34 | aalbion             |   4.07251 | alisdrugstore       |   4.07251 | aalbion           |   52.9426 |
-| 83519532      |      25 | adderallFAST        |   3.70386 | aalbion             |   3.70386 | AmicoFriz         |   46.0164 |
-| AfriKanSun    |      24 | AmicoFriz           |   3.53972 | aftershop           |   3.53972 | Apotheke          |   41.7872 |
+| top count   |   count | top average (BTC)   |   average | top maximum (BTC)   |   maximum | top total (BTC)   |    total |
+|:------------|--------:|:--------------------|----------:|:--------------------|----------:|:------------------|---------:|
+| captainkirk |   11642 | heroking            | 16001.5   | heroking            | 16001.5   | heroking          | 896083   |
+| TheDigital  |    9399 | CocaParis           |  1720.22  | SAGreat             |  1720.22  | RADICALRX         | 211654   |
+| Optumis     |    8733 | RADICALRX           |  1331.16  | RADICALRX           |  1331.16  | optiman           | 160629   |
+| fake        |    5181 | plasticA            |   694.481 | CocaParis           |   694.481 | SAGreat           | 123873   |
+| optiman     |    4894 | SAGreat             |   509.766 | optiman             |   509.766 | plasticA          |  66670.2 |
+| sexyhomer   |    4890 | HonestCocaine       |   135.275 | plasticA            |   135.275 | CocaParis         |  60207.6 |
+| etimbuk     |    3921 | AmishMafia          |   133.625 | p3nd8s              |   133.625 | livinglarge       |  31683.6 |
+| Gotmilk     |    2762 | Xtremenutrition     |   129.343 | HonestCocaine       |   129.343 | PerfectScans      |  23714.7 |
+| OnePiece    |    2620 | p3nd8s              |   107.232 | Xtremenutrition     |   107.232 | Xtremenutrition   |  22764.4 |
+| cyberzen    |    2377 | PerfectScans        |   104.932 | PerfectScans        |   104.932 | HonestCocaine     |  19885.4 |
 
