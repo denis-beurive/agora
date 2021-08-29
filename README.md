@@ -52,7 +52,6 @@ optional arguments:
   --skip-monthly    skip the generation of monthly graphs
   --skip-if-exists  skip the generation a graph if ot already exists
   --km-only         only generate KMeans data
-(agora-XPqCgF3T) denis@labo:~/Documents/github/agora
 ```
 
 **Examples for tests**:
