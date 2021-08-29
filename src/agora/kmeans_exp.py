@@ -168,13 +168,10 @@ def km_calc(in_data: pd.DataFrame,
 
         Input:
 
-              vendor_name  btc
-            0          v1    1
-            1          v1    2
-            2          v1    3
-            3          v2    5
-            4          v2    5
-            5          v3  200
+              vendor_name  count  btc
+            0          v1      3    2
+            1          v2      2    5
+            2          v3      1  200
 
         Output:
 
@@ -208,7 +205,7 @@ def km_calc(in_data: pd.DataFrame,
                - btc
                - labels
     """
-    v = km_data_total_amount_count(in_data)
+    v = in_data.copy()
     kmeans = KMeans(n_clusters=centroids_count, n_init=3, max_iter=3000, random_state=1)
     kmeans = kmeans.fit(v[['count', 'btc']])
     v.loc[:, 'labels'] = kmeans.labels_

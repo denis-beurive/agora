@@ -6,25 +6,15 @@ A deep dive into the dark WEB.
 
 Click [here](doc/installation.md) to get a detailed installation procedure.
 
+> Note: you may want to consult [these tips for data exploration](doc/tips.md).
+
 # Usage
+
+## Real use
 
 Usage (from the **project root folder**):
 
     python -m agora.agora --verbose ./data ./output
-
-> Make sure that you've executed "pipenv install --dev" first! Please read the installation section.
-
-For test (load only 200 rows per CSV file):
-
-    python -m agora.agora --verbose --test ./data ./output
-
-Skip the generation of monthly graphs:
-
-    python -m agora.agora --verbose --skip-monthly ./data ./output
-
-Skip the generation of _some graphs_ if they already exist:
-
-    python -m agora.agora --verbose --skip-if-exists ./data ./output
 
 > **Note**: make sure to initialise the Python environment first!
 > 
@@ -35,6 +25,20 @@ Skip the generation of _some graphs_ if they already exist:
 > see errors.
 > 
 > You can delete all previously generated documents: `find ./output -name "*.svg" -exec rm {} \;`
+
+## Dev and tests
+
+For test (load only 200 rows per CSV file):
+
+    python -m agora.agora --verbose --test ./data ./output
+
+Skip the generation of monthly documents:
+
+    python -m agora.agora --verbose --skip-monthly ./data ./output
+
+Skip the generation of _some documents_ (the ones that take very long time to generate) if they already exist:
+
+    python -m agora.agora --verbose --skip-if-exists ./data ./output
 
 # Running the unit tests
     

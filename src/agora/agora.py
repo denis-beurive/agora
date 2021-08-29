@@ -3,6 +3,10 @@
 
         python -m agora.agora --verbose ./data ./output
 
+    Do not generate the (last) time consuming reports if they already exist:
+
+        python -m agora.agora --verbose --skip-if-exists ./data ./output
+
     For test (load only 200 rows per CSV file):
 
         python -m agora.agora --verbose --test ./data ./output
@@ -26,6 +30,7 @@ import argparse
 import collections
 from datetime import datetime
 import os
+from pathlib import Path
 import re
 import pandas as pd
 from numpy import float64
@@ -54,6 +59,10 @@ from .markdown_dumper import data_top_btc_dumper, \
 from .fs_tools import create_directory
 import seaborn as sns
 from .stat import calculate_boxplot_data, BoxPlotData
+from .report import Report, SetName
+
+
+DIR = Path(os.path.dirname(os.path.realpath(__file__))).parent.parent.absolute()
 
 
 # Set options for Pandas.
@@ -146,10 +155,18 @@ def csv_loader(path: str, load_minimal: bool = USE_MINIMAL_SET, max_rows: Option
     return data.loc[data['vendor_name'].apply(regex_filter)]
 
 
+def file_name_to_date(name: str) -> str:
+    # 01-june2014.csv
+    p: Pattern = re.compile('^(\\d{2})-([a-z]+)(\\d{4})\\.csv$')
+    m: Match = p.match(name)
+    return "{} {} {}".format(m.group(1), m.group(2), m.group(3))
+
+
 def process_month(csv_input: str,
                   output_path: str,
                   df: pd.DataFrame,
                   md_reports_paths: Dict[MdType, str],
+                  in_report: Report,
                   debug: bool = False,
                   verbose: bool = False) -> None:
     """
@@ -159,6 +176,7 @@ def process_month(csv_input: str,
     :param output_path: path to the base of the output directory, used to store the generated documents.
     :param df: data frame that contains the data for the month.
     :param md_reports_paths: names of the Markdown formatted generated documents.
+    :param in_report: the report container.
     :param debug: debug flag.
     :param verbose: verbose flag.
     """
@@ -169,6 +187,7 @@ def process_month(csv_input: str,
 
     outputs = get_output_dated_files(output_path, csv_input[:-4])
     date = csv_input
+    date_text = file_name_to_date(csv_input)
 
     # 1. Transactions per vendor: boxplot / hbar / table.
     #    - Number of transactions per vendor.
@@ -176,16 +195,53 @@ def process_month(csv_input: str,
     #    - Maximum transaction per vendor.
     #    - Total amount of transaction per vendor.
 
+    in_report.add_title1("{}".format(date_text))
+
+    set_name = "transactions_per_vendor_{}".format(date)
+    in_report.add_title2("Transactions per vendor", SetName(set_name))
+
     # boxplot
+    in_report.add_document_to_set(set_name,
+                                  "Total number of transactions per vendor (BOXPLOT)",
+                                  None,
+                                  outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_COUNTS])
     df_vendor_count = draw_transactions_counts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_COUNTS], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Average transaction amount per vendor (BOXPLOT)",
+                                  None,
+                                  outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC])
     df_vendor_average_value = draw_transactions_average_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Maximum transaction amount per vendor (BOXPLOT)",
+                                  None,
+                                  outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_MAX_BTC])
     df_vendor_max_value = draw_transactions_max_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_MAX_BTC], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Total amount of transactions per vendor (BOXPLOT)",
+                                  None,
+                                  outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_SUM_BTC])
     df_vendor_sum_value = draw_transactions_sum_amounts_repartition(df, "vendor_name", outputs[GraphType.BOXPLOT_VENDOR_TRANSACTION_SUM_BTC], date, left_shift)
 
     # hbar
+    in_report.add_document_to_set(set_name,
+                                  "Total number of transactions per vendor (HBAR)",
+                                  None,
+                                  outputs[GraphType.HBAR_VENDOR_TRANSACTION_COUNTS])
     draw_transactions_count_greater_than(df_vendor_count, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_COUNTS], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Average transaction amount per vendor (HBAR)",
+                                  None,
+                                  outputs[GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC])
     draw_transactions_average_amounts_greater_than(df_vendor_average_value, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Maximum transaction amount per vendor (HBAR)",
+                                  None,
+                                  outputs[GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC])
     draw_transactions_max_amounts_greater_than(df_vendor_max_value, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Total amount of transactions per vendor (HBAR)",
+                                  None,
+                                  outputs[GraphType.HBAR_VENDOR_TRANSACTION_SUM_BTC])
     draw_transactions_sum_amounts_greater_than(df_vendor_sum_value, "vendor_name", TOP_COUNT, outputs[GraphType.HBAR_VENDOR_TRANSACTION_SUM_BTC], date, left_shift)
 
     md = data_top_btc_dumper(df_vendor_count,
@@ -193,9 +249,15 @@ def process_month(csv_input: str,
                              df_vendor_max_value,
                              df_vendor_sum_value,
                              'vendor_name')
+
+    path = md_reports_paths[MdType.MD_VENDOR_TRANSACTION]
+    in_report.add_document_to_set(set_name,
+                                  "Synthesis",
+                                  None,
+                                  path)
     if verbose:
-        print('Create file {}'.format(md_reports_paths[MdType.MD_VENDOR_TRANSACTION]))
-    with open(md_reports_paths[MdType.MD_VENDOR_TRANSACTION], "w") as fd:
+        print('Create file {}'.format(path))
+    with open(path, "w") as fd:
         fd.write("# {}\n\n".format(csv_input[3:-4]))
         fd.write("{}\n\n".format(md))
 
@@ -205,26 +267,62 @@ def process_month(csv_input: str,
     #    - Maximum transaction per shipping locality.
     #    - Total amount of transaction per shipping locality.
 
+    set_name = "transactions_per_shipping_locality_{}".format(date)
+    in_report.add_title2("Transactions per shipping locality", SetName(set_name))
+
     # boxplot
+    in_report.add_document_to_set(set_name,
+                                  "Total number of transactions per shipping locality (BOXPLOT)",
+                                  None,
+                                  outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_COUNTS])
     df_ship_from_count = draw_transactions_counts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_COUNTS], date, left_shift)
-    df_ship_from_average_value = draw_transactions_average_amounts_repartition(df, "ship_from", outputs[ GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_AVERAGE_BTC], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Average transaction amount per shipping locality (BOXPLOT)",
+                                  None,
+                                  outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_AVERAGE_BTC])
+    df_ship_from_average_value = draw_transactions_average_amounts_repartition(df, "ship_from", outputs[ GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_MAX_BTC], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Maximum transaction amount per shipping locality (BOXPLOT)",
+                                  None,
+                                  outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_MAX_BTC])
     df_ship_from_max_value = draw_transactions_max_amounts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_MAX_BTC], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Total amount of transactions per shipping locality (BOXPLOT)",
+                                  None,
+                                  outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_SUM_BTC])
     df_ship_from_sum_value = draw_transactions_sum_amounts_repartition(df, "ship_from", outputs[GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_SUM_BTC], date, left_shift)
 
     # hbar
+    in_report.add_document_to_set(set_name,
+                                  "Total number of transactions per shipping locality (HBAR)",
+                                  None,
+                                  outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS])
     draw_transactions_count_greater_than(df_ship_from_count, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Average transaction amount per shipping locality (HBAR)",
+                                  None,
+                                  outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC])
     draw_transactions_average_amounts_greater_than(df_ship_from_average_value, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Maximum transaction amount per shipping locality (HBAR)",
+                                  None,
+                                  outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC])
     draw_transactions_max_amounts_greater_than(df_ship_from_max_value, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC], date, left_shift)
+    in_report.add_document_to_set(set_name,
+                                  "Total amount of transactions per shipping locality (HBAR)",
+                                  None,
+                                  outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC])
     draw_transactions_sum_amounts_greater_than(df_ship_from_sum_value, "ship_from", TOP_COUNT, outputs[GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC], date, left_shift)
 
+    path = md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION]
     md = data_top_btc_dumper(df_ship_from_count,
                              df_ship_from_average_value,
                              df_ship_from_max_value,
                              df_ship_from_sum_value,
                              'ship_from')
     if verbose:
-        print('Create file {}'.format(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION]))
-    with open(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION], "w") as fd:
+        print('Create file {}'.format(path))
+    with open(path, "w") as fd:
         fd.write("# {}\n\n".format(csv_input[3:-4]))
         fd.write("{}\n\n".format(md))
 
@@ -233,11 +331,18 @@ def process_month(csv_input: str,
     #    - transactions: count / mean amount
     #    - transactions: count / median amount
 
+    set_name = "k_means_analysis_{}".format(date)
+    in_report.add_title2("K-Means analysis", SetName(set_name))
+
     # ---
     centroids, values = km_calc(km_data_total_amount_count(df), centroids_count=3)
     labels = values.groupby('labels')
 
     output_file = outputs[GraphType.KMEAN_COUNT_TOTAL_AMOUNT]
+    in_report.add_document_to_set(set_name,
+                                  "Total amount of transactions per vendor **AND** total numbed of transactions per vendor",
+                                  None,
+                                  output_file)
     if verbose:
         print('Create file {}'.format(output_file))
     with open(output_file, "w") as fd:
@@ -253,6 +358,10 @@ def process_month(csv_input: str,
     labels = values.groupby('labels')
 
     output_file = outputs[GraphType.KMEAN_COUNT_MEAN_AMOUNT]
+    in_report.add_document_to_set(set_name,
+                                  "Mean amount of transactions per vendor **AND** total numbed of transactions per vendor",
+                                  None,
+                                  output_file)
     if verbose:
         print('Create file {}'.format(output_file))
     with open(output_file, "w") as fd:
@@ -268,6 +377,10 @@ def process_month(csv_input: str,
     labels = values.groupby('labels')
 
     output_file = outputs[GraphType.KMEAN_COUNT_MEDIAN_AMOUNT]
+    in_report.add_document_to_set(set_name,
+                                  "Median amount of transactions per vendor **AND** total numbed of transactions per vendor",
+                                  None,
+                                  output_file)
     if verbose:
         print('Create file {}'.format(output_file))
     with open(output_file, "w") as fd:
@@ -437,6 +550,8 @@ def run():
            - 'vendor_name'       
     """
 
+    report = Report('report.md')
+
     # --------------------------------------------------------------------------
     # Generated documents for all months, individually.
     # --------------------------------------------------------------------------
@@ -468,12 +583,15 @@ def run():
                           output_path,
                           df,
                           md_reports_paths,
+                          report,
                           debug,
                           verbose)
 
     # --------------------------------------------------------------------------
     # Generated documents for the whole series of months.
     # --------------------------------------------------------------------------
+
+    report.add_title1("Whole time scale representation", SetName("whole_time_analysis"))
 
     if verbose:
         print("-" * 50)
@@ -484,6 +602,10 @@ def run():
     # - total amounts.
     # - total counts.
     gd_path = "{}/transaction/{}".format(output_path, "total-btc-vbar")
+    report.add_document_to_set("whole_time_analysis",
+                               "Total amont of transactions in BTC per vendor, per month (VBAR)",
+                               None,
+                               gd_path)
     create_directory(gd_path)
     total_amounts = draw_transactions_total_amounts(dataframes,
                                                     'btc',
@@ -492,6 +614,10 @@ def run():
                                                     0.2)
 
     gd_path = "{}/transaction/{}".format(output_path, "total-count-vbar")
+    report.add_document_to_set("whole_time_analysis",
+                               "Total number of transactions per vendor, per month (VBAR)",
+                               None,
+                               gd_path)
     create_directory(gd_path)
     total_counts = draw_transactions_total_counts(dataframes,
                                                   gd_path,
@@ -502,18 +628,30 @@ def run():
     # - total amounts.
     # - total counts.
     gd_path = "{}/transaction/{}".format(output_path, "total-transactions.md")
-    create_directory(gd_path)
-    with open(gd_path, "w") as fd:
-        md = data_total_dumper(total_amounts)
-        fd.write("# Total transaction amounts in BTC per month\n\n")
-        fd.write("{}\n\n".format(md))
-        md = data_total_dumper(total_counts)
-        fd.write("# Total number of transactions per month\n\n")
-        fd.write("{}\n\n".format(md))
+    report.add_document_to_set("whole_time_analysis",
+                               "Transactions (total amount and count) per vendor, per month (table)",
+                               None,
+                               gd_path)
+    if skip_if_exists and os.path.exists(gd_path):
+        print("Skip {}".format(gd_path))
+    else:
+        create_directory(gd_path)
+        with open(gd_path, "w") as fd:
+            md = data_total_dumper(total_amounts)
+            fd.write("# Total transaction amounts in BTC per month\n\n")
+            fd.write("{}\n\n".format(md))
+            md = data_total_dumper(total_counts)
+            fd.write("# Total number of transactions per month\n\n")
+            fd.write("{}\n\n".format(md))
 
     # List of boxplot: repartition of transaction amounts per vendor.
     gd_path = "{}/transaction/{}".format(output_path, "boxplot-amount-per-vendor-year")
+    report.add_document_to_set("whole_time_analysis",
+                               "Repartition of transactions amounts per vendor, per month (BOXPLOT)",
+                               None,
+                               gd_path)
     if skip_if_exists and os.path.exists(gd_path):
+        print("Skip {}".format(gd_path))
         pass
     else:
         create_directory(gd_path)
@@ -524,7 +662,12 @@ def run():
 
     # List of boxplot: repartition of transaction counts per vendor.
     gd_path = "{}/transaction/{}".format(output_path, "boxplot-count-per-vendor-year")
+    report.add_document_to_set("whole_time_analysis",
+                               "Repartition of transactions counts per vendor, per month (BOXPLOT)",
+                               None,
+                               gd_path)
     if skip_if_exists and os.path.exists(gd_path):
+        print("Skip {}".format(gd_path))
         pass
     else:
         create_directory(gd_path)
@@ -540,6 +683,8 @@ def run():
                                                          0.2,
                                                          -700,
                                                          1500)
+
+    report.dump(DIR)
 
 
 run()
