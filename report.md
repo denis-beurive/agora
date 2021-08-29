@@ -448,4 +448,9 @@
 
 # Whole time scale representation
 
+* Total amont of transactions in BTC per vendor, per month (VBAR): [click here](output/transaction/total-btc-vbar)
+* Total number of transactions per vendor, per month (VBAR): [click here](output/transaction/total-count-vbar)
+* Transactions (total amount and count) per vendor, per month (table): [click here](output/transaction/total-transactions.md)
+* Repartition of transactions amounts per vendor, per month (BOXPLOT): [click here](output/transaction/boxplot-amount-per-vendor-year)
+* Repartition of transactions counts per vendor, per month (BOXPLOT): [click here](output/transaction/boxplot-count-per-vendor-year)
 
