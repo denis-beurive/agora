@@ -65,6 +65,15 @@ def data_total_dumper(data: pd.DataFrame) -> str:
     return gd.to_markdown(index="never")
 
 
+def km_count_amount_dumper(data: pd.DataFrame) -> str:
+    gd = pd.DataFrame({
+        'vendor_name': data['vendor_name'],
+        'count': data['count'],
+        'btc': data['btc']
+    })
+    return gd.to_markdown(index="never")
+
+
 if __name__ == "__main__":
 
     # Example for "get_count_per_column_value()"

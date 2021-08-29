@@ -30,6 +30,10 @@ import re
 import pandas as pd
 from numpy import float64
 from .graph_type import GraphType
+from .kmeans_exp import km_data_total_amount_count, \
+    km_data_mean_amount_count, \
+    km_data_median_amount_count, \
+    km_calc
 from .md_type import MdType
 from .graph_drawer import \
     draw_transactions_counts_repartition, \
@@ -44,7 +48,9 @@ from .graph_drawer import \
     draw_transactions_total_counts, \
     draw_whole_period_transaction_amounts_per_vendor, \
     draw_whole_period_transactions_counts_per_vendor
-from .markdown_dumper import data_top_btc_dumper, data_total_dumper
+from .markdown_dumper import data_top_btc_dumper, \
+    data_total_dumper, \
+    km_count_amount_dumper
 from .fs_tools import create_directory
 import seaborn as sns
 from .stat import calculate_boxplot_data, BoxPlotData
@@ -161,7 +167,7 @@ def process_month(csv_input: str,
         print("*" * 10 + csv_input + "*" * 10)
         print(df[['vendor_name', 'usd', 'btc', 'rate']])
 
-    outputs = get_output_graph_files(output_path, csv_input[:-4])
+    outputs = get_output_dated_files(output_path, csv_input[:-4])
     date = csv_input
 
     # 1. Transactions per vendor: boxplot / hbar / table.
@@ -189,7 +195,7 @@ def process_month(csv_input: str,
                              'vendor_name')
     if verbose:
         print('Create file {}'.format(md_reports_paths[MdType.MD_VENDOR_TRANSACTION]))
-    with open(md_reports_paths[MdType.MD_VENDOR_TRANSACTION], "a") as fd:
+    with open(md_reports_paths[MdType.MD_VENDOR_TRANSACTION], "w") as fd:
         fd.write("# {}\n\n".format(csv_input[3:-4]))
         fd.write("{}\n\n".format(md))
 
@@ -218,39 +224,94 @@ def process_month(csv_input: str,
                              'ship_from')
     if verbose:
         print('Create file {}'.format(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION]))
-    with open(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION], "a") as fd:
+    with open(md_reports_paths[MdType.MD_SHIP_FROM_TRANSACTION], "w") as fd:
         fd.write("# {}\n\n".format(csv_input[3:-4]))
         fd.write("{}\n\n".format(md))
 
+    # 3. kemans
+    #    - transactions: count / total amount
+    #    - transactions: count / mean amount
+    #    - transactions: count / median amount
 
-def get_output_graph_files(output_directory: str, prefix: str) -> Dict[GraphType, str]:
+    # ---
+    centroids, values = km_calc(km_data_total_amount_count(df), centroids_count=3)
+    labels = values.groupby('labels')
+
+    output_file = outputs[GraphType.KMEAN_COUNT_TOTAL_AMOUNT]
+    if verbose:
+        print('Create file {}'.format(output_file))
+    with open(output_file, "w") as fd:
+        fd.write("# {}: total amount / count\n\n".format(csv_input[3:-4]))
+        fd.write("* Sum of all transactions per vendor.\n")
+        fd.write("* Total number of all transactions per vendor.\n\n")
+        for centroid, value in labels:
+            fd.write("## Centroid {}\n\n".format(centroid))
+            fd.write("{}\n\n".format(km_count_amount_dumper(value)))
+
+    # ---
+    centroids, values = km_calc(km_data_mean_amount_count(df), centroids_count=3)
+    labels = values.groupby('labels')
+
+    output_file = outputs[GraphType.KMEAN_COUNT_MEAN_AMOUNT]
+    if verbose:
+        print('Create file {}'.format(output_file))
+    with open(output_file, "w") as fd:
+        fd.write("# {}: mean amount / count\n\n".format(csv_input[3:-4]))
+        fd.write("* Mean of all transactions per vendor.\n")
+        fd.write("* Total number of all transactions per vendor.\n\n")
+        for centroid, value in labels:
+            fd.write("## Centroid {}\n\n".format(centroid))
+            fd.write("{}\n\n".format(km_count_amount_dumper(value)))
+
+    # ---
+    centroids, values = km_calc(km_data_median_amount_count(df), centroids_count=3)
+    labels = values.groupby('labels')
+
+    output_file = outputs[GraphType.KMEAN_COUNT_MEDIAN_AMOUNT]
+    if verbose:
+        print('Create file {}'.format(output_file))
+    with open(output_file, "w") as fd:
+        fd.write("# {}: median amount / count\n\n".format(csv_input[3:-4]))
+        fd.write("* Median of all transactions per vendor.\n")
+        fd.write("* Total number of all transactions per vendor.\n\n")
+        for centroid, value in labels:
+            fd.write("## Centroid {}\n\n".format(centroid))
+            fd.write("{}\n\n".format(km_count_amount_dumper(value)))
+
+
+def get_output_dated_files(output_directory: str,
+                           date_prefix: str) -> Dict[GraphType, str]:
     """
     Calculate the paths to the output graph files, and create the required directory of needed.
 
     :param output_directory: path to the output directory.
-    :param prefix: the prefix of the files.
+    :param date_prefix: the prefix of the files. This is the date.
     :return: a dictionary that contains the generated file names, sorted by type of representations.
     """
     paths: Dict[GraphType, str] = {
-        GraphType.BOXPLOT_VENDOR_TRANSACTION_COUNTS: "{}/vendor/transactions-count/{}".format(output_directory, "{}/transactions-counts-boxplot".format(prefix)),
-        GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC: "{}/vendor/transactions-average/{}".format(output_directory, "{}/transactions-average-btc-boxplot".format(prefix)),
-        GraphType.BOXPLOT_VENDOR_TRANSACTION_MAX_BTC: "{}/vendor/transactions-max/{}".format(output_directory, "{}/transactions-max-btc-boxplot".format(prefix)),
-        GraphType.BOXPLOT_VENDOR_TRANSACTION_SUM_BTC: "{}/vendor/transactions-sum/{}".format(output_directory, "{}/transactions-sum-btc-boxplot".format(prefix)),
+        GraphType.BOXPLOT_VENDOR_TRANSACTION_COUNTS: "{}/vendor/transactions-count/{}".format(output_directory, "{}/transactions-counts-boxplot".format(date_prefix)),
+        GraphType.BOXPLOT_VENDOR_TRANSACTION_AVERAGE_BTC: "{}/vendor/transactions-average/{}".format(output_directory, "{}/transactions-average-btc-boxplot".format(date_prefix)),
+        GraphType.BOXPLOT_VENDOR_TRANSACTION_MAX_BTC: "{}/vendor/transactions-max/{}".format(output_directory, "{}/transactions-max-btc-boxplot".format(date_prefix)),
+        GraphType.BOXPLOT_VENDOR_TRANSACTION_SUM_BTC: "{}/vendor/transactions-sum/{}".format(output_directory, "{}/transactions-sum-btc-boxplot".format(date_prefix)),
 
-        GraphType.HBAR_VENDOR_TRANSACTION_COUNTS: "{}/vendor/transactions-count/{}".format(output_directory, "{}/transactions-count-hbar".format(prefix)),
-        GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC: "{}/vendor/transactions-average/{}".format(output_directory, "{}/transactions-average-btc-hbar".format(prefix)),
-        GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC: "{}/vendor/transactions-max/{}".format(output_directory, "{}/transactions-max-btc-hbar".format(prefix)),
-        GraphType.HBAR_VENDOR_TRANSACTION_SUM_BTC: "{}/vendor/transactions-sum/{}".format(output_directory, "{}/transactions-sum-btc-hbar".format(prefix)),
+        GraphType.HBAR_VENDOR_TRANSACTION_COUNTS: "{}/vendor/transactions-count/{}".format(output_directory, "{}/transactions-count-hbar".format(date_prefix)),
+        GraphType.HBAR_VENDOR_TRANSACTION_AVERAGE_BTC: "{}/vendor/transactions-average/{}".format(output_directory, "{}/transactions-average-btc-hbar".format(date_prefix)),
+        GraphType.HBAR_VENDOR_TRANSACTION_MAX_BTC: "{}/vendor/transactions-max/{}".format(output_directory, "{}/transactions-max-btc-hbar".format(date_prefix)),
+        GraphType.HBAR_VENDOR_TRANSACTION_SUM_BTC: "{}/vendor/transactions-sum/{}".format(output_directory, "{}/transactions-sum-btc-hbar".format(date_prefix)),
 
-        GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_COUNTS: "{}/ship-from/transactions-count/{}".format(output_directory, "{}/transactions-counts-boxplot".format(prefix)),
-        GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_AVERAGE_BTC: "{}/ship-from/transactions-average/{}".format(output_directory, "{}/transactions-average-btc-boxplot".format(prefix)),
-        GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_MAX_BTC: "{}/ship-from/transactions-max/{}".format(output_directory, "{}/transactions-max-btc-boxplot".format(prefix)),
-        GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_SUM_BTC: "{}/ship-from/transactions-sum/{}".format(output_directory, "{}/transactions-sum-btc-boxplot".format(prefix)),
+        GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_COUNTS: "{}/ship-from/transactions-count/{}".format(output_directory, "{}/transactions-counts-boxplot".format(date_prefix)),
+        GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_AVERAGE_BTC: "{}/ship-from/transactions-average/{}".format(output_directory, "{}/transactions-average-btc-boxplot".format(date_prefix)),
+        GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_MAX_BTC: "{}/ship-from/transactions-max/{}".format(output_directory, "{}/transactions-max-btc-boxplot".format(date_prefix)),
+        GraphType.BOXPLOT_SHIP_FROM_TRANSACTION_SUM_BTC: "{}/ship-from/transactions-sum/{}".format(output_directory, "{}/transactions-sum-btc-boxplot".format(date_prefix)),
 
-        GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS: "{}/ship-from/transactions-count/{}".format(output_directory, "{}/transactions-count-hbar".format(prefix)),
-        GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC: "{}/ship-from/transactions-average/{}".format(output_directory, "{}/transactions-average-btc-hbar".format(prefix)),
-        GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC: "{}/ship-from/transactions-max/{}".format(output_directory, "{}/transactions-max-btc-hbar".format(prefix)),
-        GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC: "{}/ship-from/transactions-sum/{}".format(output_directory, "{}/transactions-sum-btc-hbar".format(prefix)),
+        GraphType.HBAR_SHIP_FROM_TRANSACTION_COUNTS: "{}/ship-from/transactions-count/{}".format(output_directory, "{}/transactions-count-hbar".format(date_prefix)),
+        GraphType.HBAR_SHIP_FROM_TRANSACTION_AVERAGE_BTC: "{}/ship-from/transactions-average/{}".format(output_directory, "{}/transactions-average-btc-hbar".format(date_prefix)),
+        GraphType.HBAR_SHIP_FROM_TRANSACTION_MAX_BTC: "{}/ship-from/transactions-max/{}".format(output_directory, "{}/transactions-max-btc-hbar".format(date_prefix)),
+        GraphType.HBAR_SHIP_FROM_TRANSACTION_SUM_BTC: "{}/ship-from/transactions-sum/{}".format(output_directory, "{}/transactions-sum-btc-hbar".format(date_prefix)),
+
+        GraphType.KMEAN_COUNT_TOTAL_AMOUNT: "{}/kmeans/{}".format(output_directory, "km_{}_total_amount_count".format(date_prefix)),
+        GraphType.KMEAN_COUNT_MEAN_AMOUNT: "{}/kmeans/{}".format(output_directory, "km_{}_mean_amount_count".format(date_prefix)),
+        GraphType.KMEAN_COUNT_MEDIAN_AMOUNT: "{}/kmeans/{}".format(output_directory, "km_{}_median_amount_count".format(date_prefix)),
     }
 
     for path in paths.values():
@@ -322,11 +383,16 @@ def run():
                         action='store_true',
                         default=False,
                         help='skip the generation of monthly graphs')
-    parser.add_argument('--skip-if_exists',
+    parser.add_argument('--skip-if-exists',
                         dest='skip_if_exists',
                         action='store_true',
                         default=False,
                         help='skip the generation a graph if ot already exists')
+    parser.add_argument('--km-only',
+                        dest='km_only',
+                        action='store_true',
+                        default=False,
+                        help='only generate KMeans data')
     parser.add_argument('input_path',
                         action='store',
                         nargs=1,
@@ -346,6 +412,7 @@ def run():
     test_mode: bool = args.test
     skip_monthly: bool = args.skip_monthly
     skip_if_exists: bool = args.skip_if_exists
+    kmean_only: bool = args.km_only
 
     if verbose:
         print('input directory:       {}'.format(input_path))
@@ -353,6 +420,7 @@ def run():
         print('test mode activated:   {}'.format("yes" if test_mode else "no"))
         print('skip monthly graphs:   {}'.format("yes" if skip_monthly else "no"))
         print('skip if exists:        {}'.format("yes" if skip_if_exists else "no"))
+        print('kmean only:            {}'.format("yes" if kmean_only else "no"))
 
     md_reports_paths = get_output_md_files(output_path)
     dataframes: OrderedDict[str, pd.DataFrame] = collections.OrderedDict()
@@ -396,7 +464,12 @@ def run():
         dataframes[csv_input[3:-4]] = df
 
         if not skip_monthly:
-            process_month(csv_input, output_path, df, md_reports_paths, debug, verbose)
+            process_month(csv_input,
+                          output_path,
+                          df,
+                          md_reports_paths,
+                          debug,
+                          verbose)
 
     # --------------------------------------------------------------------------
     # Generated documents for the whole series of months.
